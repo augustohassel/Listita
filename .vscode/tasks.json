@@ -1,0 +1,28 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Release: Incrementar Versión en package.json",
+      "type": "shell",
+      "command": "npm version ${input:versionType} --no-git-tag-version",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "versionType",
+      "description": "Seleccioná qué tipo de versión incrementar (SemVer):",
+      "type": "pickString",
+      "options": [
+        "patch",
+        "minor",
+        "major"
+      ],
+      "default": "patch"
+    }
+  ]
+}
