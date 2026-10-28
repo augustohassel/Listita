@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { BottomNav } from './components/layout/BottomNav'
 import { Header } from './components/layout/Header'
+import { ModalSheet } from './components/layout/ModalSheet'
 import { createList, db, loadDemoData } from './db'
 import { ListDetail } from './features/ListDetail'
 import { Rankings } from './features/Rankings'
@@ -408,128 +409,101 @@ export default function App() {
       )}
 
       {isListModalOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Nuevo listado"
+        <ModalSheet
+          title="Nuevo listado"
+          subtitle="Definí hasta 12 atributos personalizados para tus elementos."
+          icon={Layers}
+          closeLabel="Cerrar modal de nuevo listado"
+          onClose={() => setIsListModalOpen(false)}
+          onSubmit={submitList}
         >
-          <form
-            onSubmit={submitList}
-            className="w-full max-w-lg glass-panel rounded-t-3xl sm:rounded-3xl border border-slate-700/70 p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl"
-          >
-            <div className="w-10 h-1 bg-slate-700 rounded-full mx-auto mb-1 sm:hidden" />
+          <label className="block space-y-1.5 text-xs font-semibold text-slate-300">
+            <span>Nombre del listado</span>
+            <input
+              required
+              maxLength={120}
+              placeholder="Vinos para volver a probar"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+            />
+          </label>
 
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <Layers className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-slate-100">Nuevo listado</h2>
-                  <p className="text-xs text-slate-400">
-                    Definí hasta 12 atributos personalizados para tus elementos.
-                  </p>
-                </div>
-              </div>
+          <label className="block space-y-1.5 text-xs font-semibold text-slate-300">
+            <span>Categoría</span>
+            <input
+              maxLength={120}
+              placeholder="Vinos, bares, comidas…"
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+              className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+            />
+          </label>
+
+          <div className="space-y-2">
+            <div className="flex items-end gap-2">
+              <label className="flex-1 block space-y-1.5 text-xs font-semibold text-slate-300">
+                <span>Atributos del listado</span>
+                <input
+                  placeholder="Bodega, Cepa, Año"
+                  value={fieldsInput}
+                  onChange={(event) => setFieldsInput(event.target.value)}
+                  onKeyDown={handleFieldKeyDown}
+                  aria-describedby="fields-help"
+                  className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                />
+              </label>
               <button
                 type="button"
-                onClick={() => setIsListModalOpen(false)}
-                aria-label="Cerrar modal de nuevo listado"
-                className="touch-target p-2 rounded-xl bg-slate-800/80 text-slate-300 border border-slate-700/60 flex items-center justify-center"
+                onClick={addChipFromInput}
+                className="touch-target px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-bold"
               >
-                <X className="w-4 h-4" />
+                + Chip
               </button>
             </div>
 
-            <label className="block space-y-1.5 text-xs font-semibold text-slate-300">
-              <span>Nombre del listado</span>
-              <input
-                required
-                maxLength={120}
-                placeholder="Vinos para volver a probar"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
-              />
-            </label>
-
-            <label className="block space-y-1.5 text-xs font-semibold text-slate-300">
-              <span>Categoría</span>
-              <input
-                maxLength={120}
-                placeholder="Vinos, bares, comidas…"
-                value={category}
-                onChange={(event) => setCategory(event.target.value)}
-                className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
-              />
-            </label>
-
-            <div className="space-y-2">
-              <div className="flex items-end gap-2">
-                <label className="flex-1 block space-y-1.5 text-xs font-semibold text-slate-300">
-                  <span>Atributos del listado</span>
-                  <input
-                    placeholder="Bodega, Cepa, Año"
-                    value={fieldsInput}
-                    onChange={(event) => setFieldsInput(event.target.value)}
-                    onKeyDown={handleFieldKeyDown}
-                    aria-describedby="fields-help"
-                    className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
-                  />
-                </label>
-                <button
-                  type="button"
-                  onClick={addChipFromInput}
-                  className="touch-target px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-bold"
-                >
-                  + Chip
-                </button>
-              </div>
-
-              {chipFields.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {chipFields.map((chip, index) => (
-                    <span
-                      key={`${chip}-${index}`}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold"
+            {chipFields.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {chipFields.map((chip, index) => (
+                  <span
+                    key={`${chip}-${index}`}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold"
+                  >
+                    <span>{chip}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeChip(index)}
+                      aria-label={`Quitar atributo ${chip}`}
+                      className="hover:text-white"
                     >
-                      <span>{chip}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeChip(index)}
-                        aria-label={`Quitar atributo ${chip}`}
-                        className="hover:text-white"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
 
-              <small id="fields-help" className="block text-[11px] text-slate-400">
-                Agregá chips o separá con comas hasta 12 atributos distintos.
-              </small>
-            </div>
+            <small id="fields-help" className="block text-[11px] text-slate-400">
+              Agregá chips o separá con comas hasta 12 atributos distintos.
+            </small>
+          </div>
 
-            <div className="flex items-center justify-end gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsListModalOpen(false)}
-                className="touch-target px-4 py-2.5 rounded-xl bg-slate-800/90 text-slate-200 text-xs font-semibold border border-slate-700/70"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="touch-target px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20"
-              >
-                Crear listado
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="flex items-center justify-end gap-2.5 pt-2">
+            <button
+              type="button"
+              onClick={() => setIsListModalOpen(false)}
+              className="touch-target px-4 py-2.5 rounded-xl bg-slate-800/90 text-slate-200 text-xs font-semibold border border-slate-700/70"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="touch-target px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20"
+            >
+              Crear listado
+            </button>
+          </div>
+        </ModalSheet>
       )}
 
       <BottomNav
