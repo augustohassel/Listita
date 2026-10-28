@@ -33,7 +33,7 @@ export function BottomNav({
   return (
     <nav
       aria-label="Navegación principal"
-      className="fixed bottom-0 left-0 right-0 z-30 glass-panel border-t border-slate-800/80 pb-[max(0.5rem,var(--safe-bottom))] pt-1.5 px-2"
+      className="fixed bottom-0 left-0 right-0 z-30 glass-panel border-t border-line/20 pb-[max(0.5rem,var(--safe-bottom))] pt-1.5 px-2"
     >
       <div className="max-w-lg mx-auto grid grid-cols-4 gap-1">
         {TABS.map((tab) => {
@@ -49,8 +49,8 @@ export function BottomNav({
               onClick={() => onSelectTab(tab.id)}
               className={`touch-target relative flex flex-col items-center justify-center py-1.5 px-2 rounded-2xl transition-all duration-150 ${
                 isActive
-                  ? 'text-amber-400 bg-amber-500/10 border border-amber-500/25 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 border border-transparent'
+                  ? 'text-accent bg-accent/15 border border-accent/30 shadow-sm'
+                  : 'text-ink-muted hover:text-ink border border-transparent'
               }`}
             >
               <div className="relative flex items-center justify-center">
@@ -59,8 +59,8 @@ export function BottomNav({
                   <span
                     className={`absolute -top-1.5 -right-3.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none ${
                       isActive
-                        ? 'bg-amber-500 text-slate-950'
-                        : 'bg-slate-800 text-slate-300 border border-slate-700'
+                        ? 'bg-accent text-on-accent'
+                        : 'bg-surface text-ink-muted border border-line/20'
                     }`}
                   >
                     {count}

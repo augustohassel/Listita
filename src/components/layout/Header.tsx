@@ -9,19 +9,19 @@ export function Header({ title = 'Listita', subtitle }: HeaderProps) {
   const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.1.0'
 
   return (
-    <header className="sticky top-0 z-30 glass-panel border-b border-slate-800/80 px-4 py-3 sm:px-6 pt-[max(0.75rem,var(--safe-top))]">
+    <header className="sticky top-0 z-30 glass-panel border-b border-line/20 px-4 py-3 sm:px-6 pt-[max(0.75rem,var(--safe-top))]">
       <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/25">
-            <Layers className="w-5 h-5 text-white" />
+          <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-tr from-accent to-surface-2 flex items-center justify-center shadow-lg shadow-accent/20">
+            <Layers className="w-5 h-5 text-ink" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-base tracking-tight text-slate-100 truncate">
+              <span className="font-bold text-base tracking-tight text-ink truncate">
                 {title}
               </span>
               {subtitle && (
-                <span className="text-xs text-amber-400/90 font-medium truncate">
+                <span className="text-xs text-accent font-medium truncate">
                   · {subtitle}
                 </span>
               )}
@@ -35,7 +35,7 @@ export function Header({ title = 'Listita', subtitle }: HeaderProps) {
 
         <div className="flex items-center gap-2 shrink-0">
           <span
-            className="text-[11px] font-mono font-medium text-slate-400 bg-slate-900/90 px-2.5 py-0.5 rounded-full border border-slate-700/70 shadow-sm"
+            className="text-[11px] font-mono font-medium text-ink-muted bg-surface/80 px-2.5 py-0.5 rounded-full border border-line/20 shadow-sm"
             title={`Versión instalada: v${version}`}
           >
             v{version}

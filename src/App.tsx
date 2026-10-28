@@ -124,24 +124,24 @@ export default function App() {
   })
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-base text-ink flex flex-col">
       <Header subtitle={selected?.name} />
 
       <main className="flex-1 w-full max-w-lg mx-auto px-4 pt-4 pb-28 space-y-4">
         {error && (
           <div
             role="alert"
-            className="rounded-2xl bg-rose-500/15 border border-rose-500/40 px-4 py-3 text-xs font-semibold text-rose-200 flex items-center justify-between gap-3 shadow-lg"
+            className="rounded-2xl bg-red-500/15 border border-red-500/40 px-4 py-3 text-xs font-semibold text-red-200 flex items-center justify-between gap-3 shadow-lg"
           >
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
               <span>{error}</span>
             </div>
             <button
               type="button"
               onClick={() => setError('')}
               aria-label="Cerrar alerta de error"
-              className="p-1 rounded-lg hover:bg-rose-500/20 text-rose-300"
+              className="p-1 rounded-lg hover:bg-red-500/20 text-red-300"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -155,8 +155,8 @@ export default function App() {
             <section className="space-y-4" aria-label="Mis listados">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h1 className="text-lg font-extrabold text-slate-100">Mis listados</h1>
-                  <p className="text-xs text-slate-400">
+                  <h1 className="text-lg font-extrabold text-ink">Mis listados</h1>
+                  <p className="text-xs text-ink-muted">
                     Colecciones personalizadas con atributos propios y rankings manuales.
                   </p>
                 </div>
@@ -167,7 +167,7 @@ export default function App() {
                     setError('')
                     setIsListModalOpen(true)
                   }}
-                  className="touch-target shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/25 transition-all"
+                  className="touch-target shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-accent to-accent-2 hover:opacity-95 text-on-accent font-bold text-xs shadow-lg shadow-accent/20 transition-all focus:outline-none focus:ring-2 focus:ring-accent"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Nuevo listado</span>
@@ -175,35 +175,35 @@ export default function App() {
               </div>
 
               {lists === undefined && (
-                <p role="status" className="text-center text-sm text-slate-400 py-8">
+                <p role="status" className="text-center text-sm text-ink-muted py-8">
                   Cargando listados…
                 </p>
               )}
 
               {lists && lists.length > 0 && (
                 <div className="relative">
-                  <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Search className="w-4 h-4 text-ink-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="search"
                     aria-label="Buscar listado"
                     placeholder="Filtrar por nombre o categoría…"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    className="w-full rounded-2xl bg-slate-900/90 border border-slate-800 pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                    className="w-full rounded-2xl bg-surface/90 border border-line/20 pl-10 pr-4 py-2.5 text-xs text-ink placeholder:text-ink-muted/70 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
                   />
                 </div>
               )}
 
               {lists?.length === 0 && (
                 <div className="glass-card rounded-3xl p-6 text-center space-y-4">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 mx-auto">
+                  <div className="w-12 h-12 rounded-2xl bg-accent/15 border border-accent/30 flex items-center justify-center text-accent mx-auto">
                     <Layers className="w-6 h-6" />
                   </div>
                   <div className="space-y-1">
-                    <h2 className="text-base font-bold text-slate-100">
+                    <h2 className="text-base font-bold text-ink">
                       Todo empieza con una buena lista.
                     </h2>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-ink-muted">
                       Vinos, bares, comidas… empezá por un listado.
                     </p>
                   </div>
@@ -211,7 +211,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setIsListModalOpen(true)}
-                      className="touch-target w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20"
+                      className="touch-target w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-2 hover:opacity-95 text-on-accent font-bold text-xs shadow-lg shadow-accent/20 focus:outline-none focus:ring-2 focus:ring-accent"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Crear primer listado</span>
@@ -225,7 +225,7 @@ export default function App() {
                           showToast('Datos de demostración cargados.')
                         })
                       }
-                      className="touch-target w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-amber-300 border border-amber-500/30 text-xs font-semibold"
+                      className="touch-target w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-surface/90 hover:bg-surface text-accent border border-accent/30 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-accent"
                     >
                       <Sparkles className="w-4 h-4" />
                       <span>Cargar datos de demostración</span>
@@ -248,23 +248,23 @@ export default function App() {
                     <article
                       key={list.id}
                       className={`glass-card rounded-2xl p-4 space-y-3 transition-all ${
-                        isSelected ? 'border-amber-500/40 ring-1 ring-amber-500/20' : ''
+                        isSelected ? 'border-accent/40 ring-1 ring-accent/20' : ''
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <span className="text-[10px] uppercase tracking-wider font-semibold text-amber-400">
+                          <span className="text-[10px] uppercase tracking-wider font-semibold text-accent">
                             {list.category || 'Listado personal'}
                           </span>
-                          <h2 className="text-base font-bold text-slate-100 truncate">
+                          <h2 className="text-base font-bold text-ink truncate">
                             {list.name}
                           </h2>
                         </div>
-                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 shrink-0">
-                          <span className="px-2 py-0.5 rounded-full bg-slate-900/90 border border-slate-800">
+                        <div className="flex items-center gap-1.5 text-[11px] text-ink-muted shrink-0">
+                          <span className="px-2 py-0.5 rounded-full bg-surface/90 border border-line/20">
                             {listItemsCount} elem.
                           </span>
-                          <span className="px-2 py-0.5 rounded-full bg-slate-900/90 border border-slate-800">
+                          <span className="px-2 py-0.5 rounded-full bg-surface/90 border border-line/20">
                             {listRankingsCount} rank.
                           </span>
                         </div>
@@ -275,9 +275,9 @@ export default function App() {
                           {list.fields.map((field) => (
                             <span
                               key={field}
-                              className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-lg bg-slate-900/80 text-slate-300 border border-slate-800"
+                              className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-lg bg-surface/80 text-ink-muted border border-line/20"
                             >
-                              <Tag className="w-2.5 h-2.5 text-amber-400" />
+                              <Tag className="w-2.5 h-2.5 text-accent" />
                               {field}
                             </span>
                           ))}
@@ -291,7 +291,7 @@ export default function App() {
                             setSelectedId(list.id)
                             setCurrentTab('items')
                           }}
-                          className="touch-target flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition-colors"
+                          className="touch-target flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-accent/15 hover:bg-accent/25 text-accent border border-accent/30 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
                         >
                           <Package className="w-3.5 h-3.5" />
                           <span>Elementos ({listItemsCount})</span>
@@ -302,9 +302,9 @@ export default function App() {
                             setSelectedId(list.id)
                             setCurrentTab('rankings')
                           }}
-                          className="touch-target flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-800 text-xs font-semibold transition-colors"
+                          className="touch-target flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-surface/90 hover:bg-surface text-ink border border-line/20 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
                         >
-                          <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                          <Trophy className="w-3.5 h-3.5 text-accent" />
                           <span>Rankings ({listRankingsCount})</span>
                         </button>
                       </div>
@@ -328,16 +328,16 @@ export default function App() {
               />
             ) : (
               <section className="glass-card rounded-3xl p-6 text-center space-y-3">
-                <h2 className="text-base font-bold text-slate-100">
+                <h2 className="text-base font-bold text-ink">
                   No hay un listado seleccionado
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-ink-muted">
                   Creá un listado primero para empezar a cargar elementos.
                 </p>
                 <button
                   type="button"
                   onClick={() => setIsListModalOpen(true)}
-                  className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-xs"
+                  className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-accent to-accent-2 hover:opacity-95 text-on-accent font-bold text-xs shadow-lg shadow-accent/20 focus:outline-none focus:ring-2 focus:ring-accent"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Nuevo listado</span>
@@ -359,16 +359,16 @@ export default function App() {
               />
             ) : (
               <section className="glass-card rounded-3xl p-6 text-center space-y-3">
-                <h2 className="text-base font-bold text-slate-100">
+                <h2 className="text-base font-bold text-ink">
                   Sin listados para armar rankings
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-ink-muted">
                   Creá un listado y agregá elementos para ordenarlos a tu gusto.
                 </p>
                 <button
                   type="button"
                   onClick={() => setIsListModalOpen(true)}
-                  className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-xs"
+                  className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-accent to-accent-2 hover:opacity-95 text-on-accent font-bold text-xs shadow-lg shadow-accent/20 focus:outline-none focus:ring-2 focus:ring-accent"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Nuevo listado</span>
@@ -401,7 +401,7 @@ export default function App() {
             type="button"
             onClick={() => setToast('')}
             aria-label="Cerrar notificación"
-            className="p-1 rounded-lg hover:bg-slate-800 text-slate-400"
+            className="p-1 rounded-lg hover:bg-surface text-ink-muted"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -417,7 +417,7 @@ export default function App() {
           onClose={() => setIsListModalOpen(false)}
           onSubmit={submitList}
         >
-          <label className="block space-y-1.5 text-xs font-semibold text-slate-300">
+          <label className="block space-y-1.5 text-xs font-semibold text-ink-muted">
             <span>Nombre del listado</span>
             <input
               required
@@ -425,24 +425,24 @@ export default function App() {
               placeholder="Vinos para volver a probar"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+              className="w-full rounded-xl bg-surface/90 border border-line/25 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted/70 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
             />
           </label>
 
-          <label className="block space-y-1.5 text-xs font-semibold text-slate-300">
+          <label className="block space-y-1.5 text-xs font-semibold text-ink-muted">
             <span>Categoría</span>
             <input
               maxLength={120}
               placeholder="Vinos, bares, comidas…"
               value={category}
               onChange={(event) => setCategory(event.target.value)}
-              className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+              className="w-full rounded-xl bg-surface/90 border border-line/25 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted/70 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
             />
           </label>
 
           <div className="space-y-2">
             <div className="flex items-end gap-2">
-              <label className="flex-1 block space-y-1.5 text-xs font-semibold text-slate-300">
+              <label className="flex-1 block space-y-1.5 text-xs font-semibold text-ink-muted">
                 <span>Atributos del listado</span>
                 <input
                   placeholder="Bodega, Cepa, Año"
@@ -450,13 +450,13 @@ export default function App() {
                   onChange={(event) => setFieldsInput(event.target.value)}
                   onKeyDown={handleFieldKeyDown}
                   aria-describedby="fields-help"
-                  className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                  className="w-full rounded-xl bg-surface/90 border border-line/25 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted/70 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
                 />
               </label>
               <button
                 type="button"
                 onClick={addChipFromInput}
-                className="touch-target px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-bold"
+                className="touch-target px-3.5 py-2.5 rounded-xl bg-surface hover:bg-surface-2 text-accent border border-line/30 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-accent"
               >
                 + Chip
               </button>
@@ -467,14 +467,14 @@ export default function App() {
                 {chipFields.map((chip, index) => (
                   <span
                     key={`${chip}-${index}`}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/15 border border-accent/30 text-accent text-xs font-semibold"
                   >
                     <span>{chip}</span>
                     <button
                       type="button"
                       onClick={() => removeChip(index)}
                       aria-label={`Quitar atributo ${chip}`}
-                      className="hover:text-white"
+                      className="hover:text-ink"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -483,7 +483,7 @@ export default function App() {
               </div>
             )}
 
-            <small id="fields-help" className="block text-[11px] text-slate-400">
+            <small id="fields-help" className="block text-[11px] text-ink-muted">
               Agregá chips o separá con comas hasta 12 atributos distintos.
             </small>
           </div>
@@ -492,13 +492,13 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsListModalOpen(false)}
-              className="touch-target px-4 py-2.5 rounded-xl bg-slate-800/90 text-slate-200 text-xs font-semibold border border-slate-700/70"
+              className="touch-target px-4 py-2.5 rounded-xl bg-surface/90 hover:bg-surface text-ink text-xs font-semibold border border-line/25 focus:outline-none focus:ring-2 focus:ring-accent"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="touch-target px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20"
+              className="touch-target px-5 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-2 hover:opacity-95 text-on-accent font-bold text-xs shadow-lg shadow-accent/20 focus:outline-none focus:ring-2 focus:ring-accent"
             >
               Crear listado
             </button>
