@@ -30,4 +30,6 @@ export interface BackupData {
 
 export type NavTab = 'lists' | 'items' | 'rankings' | 'settings'
 
+export type ThemeMode = 'dark' | 'light'
+
 export type RunAction = (action: () => Promise<unknown>) => Promise<boolean>

@@ -39,7 +39,7 @@ export function ItemForm({ list, item, run, onDone, onSaved }: Props) {
       onClose={onDone}
       onSubmit={submit}
     >
-      <label className="block space-y-1.5 text-xs font-semibold text-slate-300">
+      <label className="block space-y-1.5 text-xs font-semibold text-ink-muted">
         <span>Nombre del elemento</span>
         <input
           required
@@ -47,14 +47,14 @@ export function ItemForm({ list, item, run, onDone, onSaved }: Props) {
           placeholder="Ej. Malbec Reserva 2021"
           value={name}
           onChange={(event) => setName(event.target.value)}
-          className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+          className="w-full rounded-xl bg-surface/90 border border-line/25 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted/70 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
         />
       </label>
 
       {list.fields.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           {list.fields.map((field) => (
-            <label key={field} className="block space-y-1 text-xs font-semibold text-slate-300">
+            <label key={field} className="block space-y-1 text-xs font-semibold text-ink-muted">
               <span>{field}</span>
               <input
                 value={attributes[field] ?? ''}
@@ -62,14 +62,14 @@ export function ItemForm({ list, item, run, onDone, onSaved }: Props) {
                 onChange={(event) =>
                   setAttributes({ ...attributes, [field]: event.target.value })
                 }
-                className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                className="w-full rounded-xl bg-surface/90 border border-line/25 px-3 py-2 text-sm text-ink placeholder:text-ink-muted/70 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
               />
             </label>
           ))}
         </div>
       )}
 
-      <label className="block space-y-1.5 text-xs font-semibold text-slate-300">
+      <label className="block space-y-1.5 text-xs font-semibold text-ink-muted">
         <span>Notas y particularidades</span>
         <textarea
           maxLength={4000}
@@ -77,7 +77,7 @@ export function ItemForm({ list, item, run, onDone, onSaved }: Props) {
           placeholder="Aromas, sensaciones, maridaje o detalles para recordar…"
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
-          className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 resize-y"
+          className="w-full rounded-xl bg-surface/90 border border-line/25 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted/70 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-y"
         />
       </label>
 
@@ -85,13 +85,13 @@ export function ItemForm({ list, item, run, onDone, onSaved }: Props) {
         <button
           type="button"
           onClick={onDone}
-          className="touch-target px-4 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-slate-200 text-xs font-semibold border border-slate-700/70 transition-colors"
+          className="touch-target px-4 py-2.5 rounded-xl bg-surface/90 hover:bg-surface text-ink text-xs font-semibold border border-line/25 transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
         >
           Cancelar
         </button>
         <button
           type="submit"
-          className="touch-target px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all"
+          className="touch-target px-5 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-2 hover:opacity-95 text-on-accent font-bold text-xs shadow-lg shadow-accent/20 transition-all focus:outline-none focus:ring-2 focus:ring-accent"
         >
           {item ? 'Guardar cambios' : 'Agregar elemento'}
         </button>

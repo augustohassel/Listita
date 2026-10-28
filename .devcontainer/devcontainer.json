@@ -4,6 +4,9 @@
     "dockerfile": "Dockerfile"
   },
   "workspaceFolder": "/workspaces/Listita",
+  "containerEnv": {
+    "GITHUB_PERSONAL_ACCESS_TOKEN": "${localEnv:GITHUB_PERSONAL_ACCESS_TOKEN}"
+  },
   "mounts": [
     "source=${localEnv:USERPROFILE}/Documents/Personal/AgentToolkit/plugins,target=/root/.gemini/config/plugins,type=bind,consistency=cached"
   ],
