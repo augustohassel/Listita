@@ -15,7 +15,7 @@ export function Header({
   onToggleTheme,
 }: HeaderProps) {
   const version =
-    typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.1.0";
+    typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.2.0";
   const isDark = theme === "dark";
 
   return (
