@@ -50,3 +50,14 @@ Ejecutar siempre dentro del entorno del proyecto (`/workspaces/Listita`):
 - Mantener actualizado `docs/glosario.md` en tiempo real cada vez que se defina, aclare o ajuste un concepto del dominio.
 - Registrar en `docs/decisiones/` toda decisión arquitectónica difícil de revertir surgida tras evaluar alternativas reales.
 
+## 7. Versión y Release (SemVer)
+- El número de versión se gestiona centralizadamente en `package.json` y se inyecta en el cliente mediante Vite (`__APP_VERSION__`).
+- La versión está visible en la esquina superior del `Header` y en el pie de `Ajustes`.
+- **Flujo de Release (SemVer)**:
+  1. En la rama `dev`, antes de crear el Pull Request de promoción a `master`, incrementar la versión con la tarea de VS Code (*Release: Incrementar Versión en package.json*) o ejecutando `npm version <patch|minor|major> --no-git-tag-version`.
+  2. Los cambios y versiones se integran en `dev` mediante PRs de ramas `issue/<n>`. Cuando se promociona `dev` a `master`, el workflow de GitHub Actions ([`.github/workflows/deploy.yml`](file:///workspaces/Listita/.github/workflows/deploy.yml)) se ejecuta automáticamente:
+     - Compila y prueba la aplicación (`npm ci`, `npm run lint`, `npm test`, `npm run build`).
+     - Despliega a GitHub Pages (`actions/deploy-pages@v4`).
+     - Lee la versión de `package.json`, crea el tag correspondiente (`vX.Y.Z`, o `vX.Y.Z.N` si ya existiera) y publica el GitHub Release con el detalle del PR mergeado.
+
+
