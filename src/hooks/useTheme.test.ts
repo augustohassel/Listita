@@ -90,3 +90,4 @@ describe('useTheme', () => {
     setItemSpy.mockRestore()
   })
 })
+

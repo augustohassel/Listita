@@ -1,5 +1,5 @@
-import { useState, type KeyboardEvent, type SubmitEvent } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
+import { useState, type KeyboardEvent, type SubmitEvent } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -11,121 +11,127 @@ import {
   Tag,
   Trophy,
   X,
-} from 'lucide-react'
-import { BottomNav } from './components/layout/BottomNav'
-import { Header } from './components/layout/Header'
-import { ModalSheet } from './components/layout/ModalSheet'
-import { createList, db, loadDemoData } from './db'
-import { ListDetail } from './features/ListDetail'
-import { Rankings } from './features/Rankings'
-import { SettingsView } from './features/SettingsView'
-import { useTheme } from './hooks/useTheme'
-import type { NavTab, RunAction } from './types'
+} from "lucide-react";
+import { BottomNav } from "./components/layout/BottomNav";
+import { Header } from "./components/layout/Header";
+import { ModalSheet } from "./components/layout/ModalSheet";
+import { createList, db, loadDemoData } from "./db";
+import { ListDetail } from "./features/ListDetail";
+import { Rankings } from "./features/Rankings";
+import { SettingsView } from "./features/SettingsView";
+import { useTheme } from "./hooks/useTheme";
+import type { NavTab, RunAction } from "./types";
 
 export default function App() {
-  const { theme, setTheme, toggleTheme } = useTheme()
-  const lists = useLiveQuery(() => db.lists.toArray())
-  const allItems = useLiveQuery(() => db.items.toArray())
-  const allRankings = useLiveQuery(() => db.rankings.toArray())
+  const { theme, setTheme, toggleTheme } = useTheme();
+  const lists = useLiveQuery(() => db.lists.toArray());
+  const allItems = useLiveQuery(() => db.items.toArray());
+  const allRankings = useLiveQuery(() => db.rankings.toArray());
 
-  const [currentTab, setCurrentTab] = useState<NavTab>('lists')
-  const [selectedId, setSelectedId] = useState<number>()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isListModalOpen, setIsListModalOpen] = useState(false)
+  const [currentTab, setCurrentTab] = useState<NavTab>("lists");
+  const [selectedId, setSelectedId] = useState<number>();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isListModalOpen, setIsListModalOpen] = useState(false);
 
-  const [name, setName] = useState('')
-  const [category, setCategory] = useState('')
-  const [fieldsInput, setFieldsInput] = useState('')
-  const [chipFields, setChipFields] = useState<string[]>([])
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("");
+  const [fieldsInput, setFieldsInput] = useState("");
+  const [chipFields, setChipFields] = useState<string[]>([]);
 
-  const [error, setError] = useState('')
-  const [toast, setToast] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState("");
+  const [toast, setToast] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const selected = lists?.find((list) => list.id === selectedId) ?? lists?.[0]
-  const selectedItems = (allItems ?? []).filter((item) => item.listId === selected?.id)
-  const selectedRankings = (allRankings ?? []).filter((ranking) => ranking.listId === selected?.id)
+  const selected = lists?.find((list) => list.id === selectedId) ?? lists?.[0];
+  const selectedItems = (allItems ?? []).filter(
+    (item) => item.listId === selected?.id,
+  );
+  const selectedRankings = (allRankings ?? []).filter(
+    (ranking) => ranking.listId === selected?.id,
+  );
   const headerSubtitle =
-    (currentTab === 'items' || currentTab === 'rankings') && selected ? selected.name : undefined
+    (currentTab === "items" || currentTab === "rankings") && selected
+      ? selected.name
+      : undefined;
 
   function showToast(message: string) {
-    setToast(message)
+    setToast(message);
   }
 
   const run: RunAction = async (action) => {
-    setError('')
-    setBusy(true)
+    setError("");
+    setBusy(true);
     try {
-      await action()
-      return true
+      await action();
+      return true;
     } catch (cause) {
       setError(
         cause instanceof Error
           ? cause.message
-          : 'No se pudo guardar el cambio. Intentá nuevamente.',
-      )
-      return false
+          : "No se pudo guardar el cambio. Intentá nuevamente.",
+      );
+      return false;
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
-  }
+  };
 
   function addChipFromInput() {
     const parts = fieldsInput
-      .split(',')
+      .split(",")
       .map((part) => part.trim())
-      .filter(Boolean)
-    if (!parts.length) return
-    setChipFields((prev) => [...prev, ...parts])
-    setFieldsInput('')
+      .filter(Boolean);
+    if (!parts.length) return;
+    setChipFields((prev) => [...prev, ...parts]);
+    setFieldsInput("");
   }
 
   function handleFieldKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === 'Enter' && fieldsInput.trim()) {
-      event.preventDefault()
-      addChipFromInput()
+    if (event.key === "Enter" && fieldsInput.trim()) {
+      event.preventDefault();
+      addChipFromInput();
     }
   }
 
   function removeChip(indexToRemove: number) {
-    setChipFields((prev) => prev.filter((_, idx) => idx !== indexToRemove))
+    setChipFields((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   }
 
   async function submitList(event: SubmitEvent<HTMLFormElement>) {
-    event.preventDefault()
+    event.preventDefault();
     const extraFields = fieldsInput
-      .split(',')
+      .split(",")
       .map((field) => field.trim())
-      .filter(Boolean)
-    const combinedFields = [...chipFields, ...extraFields]
+      .filter(Boolean);
+    const combinedFields = [...chipFields, ...extraFields];
 
-    let createdId: number | undefined
+    let createdId: number | undefined;
     if (
       await run(async () => {
-        createdId = await createList(name, category, combinedFields)
+        createdId = await createList(name, category, combinedFields);
       })
     ) {
-      setName('')
-      setCategory('')
-      setFieldsInput('')
-      setChipFields([])
-      setIsListModalOpen(false)
+      setName("");
+      setCategory("");
+      setFieldsInput("");
+      setChipFields([]);
+      setIsListModalOpen(false);
       if (createdId !== undefined) {
-        setSelectedId(createdId)
-        setCurrentTab('items')
+        setSelectedId(createdId);
+        setCurrentTab("items");
       }
-      showToast('Listado creado exitosamente.')
+      showToast("Listado creado exitosamente.");
     }
   }
 
   const filteredLists = (lists ?? []).filter((entry) => {
-    const q = searchQuery.trim().toLocaleLowerCase('es')
-    if (!q) return true
+    const q = searchQuery.trim().toLocaleLowerCase("es");
+    if (!q) return true;
     return (
-      entry.name.toLocaleLowerCase('es').includes(q) ||
-      entry.category.toLocaleLowerCase('es').includes(q)
-    )
-  })
+      entry.name.toLocaleLowerCase("es").includes(q) ||
+      entry.category.toLocaleLowerCase("es").includes(q)
+    );
+  });
 
   return (
     <div className="min-h-screen bg-base text-ink flex flex-col transition-colors duration-200">
@@ -147,7 +153,7 @@ export default function App() {
             </div>
             <button
               type="button"
-              onClick={() => setError('')}
+              onClick={() => setError("")}
               aria-label="Cerrar alerta de error"
               className="p-1 rounded-lg hover:bg-red-500/20 text-red-600 dark:text-red-300"
             >
@@ -156,24 +162,30 @@ export default function App() {
           </div>
         )}
 
-        <fieldset disabled={busy} className="border-0 p-0 m-0 min-w-0 space-y-4">
+        <fieldset
+          disabled={busy}
+          className="border-0 p-0 m-0 min-w-0 space-y-4"
+        >
           <legend className="sr-only">Gestionar listados y rankings</legend>
 
-          {currentTab === 'lists' && (
+          {currentTab === "lists" && (
             <section className="space-y-4" aria-label="Mis listados">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h1 className="text-lg font-extrabold text-ink">Mis listados</h1>
+                  <h1 className="text-lg font-extrabold text-ink">
+                    Mis listados
+                  </h1>
                   <p className="text-xs text-ink-muted">
-                    Colecciones personalizadas con atributos propios y rankings manuales.
+                    Colecciones personalizadas con atributos propios y rankings
+                    manuales.
                   </p>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => {
-                    setError('')
-                    setIsListModalOpen(true)
+                    setError("");
+                    setIsListModalOpen(true);
                   }}
                   className="touch-target shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-accent to-accent-2 hover:opacity-95 text-on-accent font-bold text-xs shadow-lg shadow-accent/20 transition-all focus:outline-none focus:ring-2 focus:ring-accent"
                 >
@@ -183,7 +195,10 @@ export default function App() {
               </div>
 
               {lists === undefined && (
-                <p role="status" className="text-center text-sm text-ink-muted py-8">
+                <p
+                  role="status"
+                  className="text-center text-sm text-ink-muted py-8"
+                >
                   Cargando listados…
                 </p>
               )}
@@ -228,9 +243,9 @@ export default function App() {
                       type="button"
                       onClick={() =>
                         void run(async () => {
-                          const firstId = await loadDemoData()
-                          if (firstId !== undefined) setSelectedId(firstId)
-                          showToast('Datos de demostración cargados.')
+                          const firstId = await loadDemoData();
+                          if (firstId !== undefined) setSelectedId(firstId);
+                          showToast("Datos de demostración cargados.");
                         })
                       }
                       className="touch-target w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-surface/90 hover:bg-surface text-accent border border-accent/30 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-accent"
@@ -246,23 +261,25 @@ export default function App() {
                 {filteredLists.map((list) => {
                   const listItemsCount = (allItems ?? []).filter(
                     (item) => item.listId === list.id,
-                  ).length
+                  ).length;
                   const listRankingsCount = (allRankings ?? []).filter(
                     (r) => r.listId === list.id,
-                  ).length
-                  const isSelected = selected?.id === list.id
+                  ).length;
+                  const isSelected = selected?.id === list.id;
 
                   return (
                     <article
                       key={list.id}
                       className={`glass-card rounded-2xl p-4 space-y-3 transition-all ${
-                        isSelected ? 'border-accent/40 ring-1 ring-accent/20' : ''
+                        isSelected
+                          ? "border-accent/40 ring-1 ring-accent/20"
+                          : ""
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <span className="text-[10px] uppercase tracking-wider font-semibold text-accent">
-                            {list.category || 'Listado personal'}
+                            {list.category || "Listado personal"}
                           </span>
                           <h2 className="text-base font-bold text-ink truncate">
                             {list.name}
@@ -296,8 +313,8 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedId(list.id)
-                            setCurrentTab('items')
+                            setSelectedId(list.id);
+                            setCurrentTab("items");
                           }}
                           className="touch-target flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-accent/15 hover:bg-accent/25 text-accent border border-accent/30 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
                         >
@@ -307,8 +324,8 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedId(list.id)
-                            setCurrentTab('rankings')
+                            setSelectedId(list.id);
+                            setCurrentTab("rankings");
                           }}
                           className="touch-target flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-surface/90 hover:bg-surface text-ink border border-line/20 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
                         >
@@ -317,20 +334,20 @@ export default function App() {
                         </button>
                       </div>
                     </article>
-                  )
+                  );
                 })}
               </div>
             </section>
           )}
 
-          {currentTab === 'items' &&
+          {currentTab === "items" &&
             (selected ? (
               <ListDetail
                 key={selected.id}
                 list={selected}
                 lists={lists}
                 onSelectList={(id) => setSelectedId(id)}
-                onOpenRankings={() => setCurrentTab('rankings')}
+                onOpenRankings={() => setCurrentTab("rankings")}
                 run={run}
                 onToast={showToast}
               />
@@ -353,7 +370,7 @@ export default function App() {
               </section>
             ))}
 
-          {currentTab === 'rankings' &&
+          {currentTab === "rankings" &&
             (selected ? (
               <Rankings
                 listId={selected.id}
@@ -384,12 +401,12 @@ export default function App() {
               </section>
             ))}
 
-          {currentTab === 'settings' && (
+          {currentTab === "settings" && (
             <SettingsView
               run={run}
               onToast={showToast}
               onDataLoaded={(firstListId) => {
-                setSelectedId(firstListId)
+                setSelectedId(firstListId);
               }}
               theme={theme}
               onSelectTheme={setTheme}
@@ -409,7 +426,7 @@ export default function App() {
           </div>
           <button
             type="button"
-            onClick={() => setToast('')}
+            onClick={() => setToast("")}
             aria-label="Cerrar notificación"
             className="p-1 rounded-lg hover:bg-surface text-ink-muted"
           >
@@ -493,7 +510,10 @@ export default function App() {
               </div>
             )}
 
-            <small id="fields-help" className="block text-[11px] text-ink-muted">
+            <small
+              id="fields-help"
+              className="block text-[11px] text-ink-muted"
+            >
               Agregá chips o separá con comas hasta 12 atributos distintos.
             </small>
           </div>
@@ -524,5 +544,5 @@ export default function App() {
         rankingsCount={selectedRankings.length}
       />
     </div>
-  )
+  );
 }

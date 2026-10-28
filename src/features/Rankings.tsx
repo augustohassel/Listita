@@ -20,7 +20,7 @@ function getPodiumStyle(index: number) {
     return {
       card: 'bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-surface/70 border-amber-400/50 shadow-md shadow-amber-500/10',
       badge: 'bg-gradient-to-br from-amber-300 to-amber-500 text-slate-950 ring-2 ring-amber-300/40',
-      pill: 'bg-surface/80 text-amber-300 border border-amber-500/30',
+      pill: 'bg-surface/80 text-amber-700 dark:text-amber-300 border border-amber-500/30',
       label: '#1 Oro',
     }
   }
@@ -28,7 +28,7 @@ function getPodiumStyle(index: number) {
     return {
       card: 'bg-gradient-to-r from-slate-300/12 via-slate-400/5 to-surface/70 border-slate-400/40',
       badge: 'bg-gradient-to-br from-slate-200 to-slate-400 text-slate-950 ring-2 ring-slate-300/30',
-      pill: 'bg-surface/80 text-slate-300 border border-slate-400/30',
+      pill: 'bg-surface/80 text-slate-700 dark:text-slate-300 border border-slate-400/30',
       label: '#2 Plata',
     }
   }
@@ -36,7 +36,7 @@ function getPodiumStyle(index: number) {
     return {
       card: 'bg-gradient-to-r from-orange-500/15 via-orange-600/5 to-surface/70 border-orange-500/40',
       badge: 'bg-gradient-to-br from-orange-400 to-amber-700 text-white ring-2 ring-orange-400/30',
-      pill: 'bg-surface/80 text-orange-300 border border-orange-500/30',
+      pill: 'bg-surface/80 text-orange-700 dark:text-orange-300 border border-orange-500/30',
       label: '#3 Bronce',
     }
   }
@@ -229,7 +229,7 @@ export function Rankings({
               <button
                 type="button"
                 onClick={() => setConfirmDeleteId(activeRanking.id)}
-                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/25 text-xs font-semibold transition-colors"
+                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-300 border border-red-500/25 text-xs font-semibold transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Eliminar ranking</span>
@@ -320,7 +320,7 @@ export function Rankings({
                           ),
                         )
                       }
-                      className="touch-target px-2.5 py-2 rounded-xl bg-surface/80 hover:bg-red-500/20 text-ink-muted hover:text-red-300 border border-line/25 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-red-400"
+                      className="touch-target px-2.5 py-2 rounded-xl bg-surface/80 hover:bg-red-500/20 text-ink-muted hover:text-red-600 dark:hover:text-red-300 border border-line/25 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-red-400"
                     >
                       Quitar
                     </button>
