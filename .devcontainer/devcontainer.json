@@ -1,0 +1,21 @@
+{
+  "name": "Listita",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "remoteUser": "node",
+  "forwardPorts": [5173],
+  "portsAttributes": {
+    "5173": {
+      "label": "Listita",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "postCreateCommand": "npm ci",
+  "customizations": {
+    "vscode": {
+      "extensions": ["oxc.oxc-vscode"],
+      "settings": {
+        "typescript.tsdk": "node_modules/typescript/lib"
+      }
+    }
+  }
+}
