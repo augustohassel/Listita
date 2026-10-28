@@ -18,7 +18,7 @@ No necesitás instalar Node en tu computadora. El entorno de trabajo está defin
    npm run dev
    ```
 
-6. Abrí el puerto reenviado **5173** en el navegador (normalmente `http://localhost:5173`).
+6. Abrí el puerto reenviado **5174** en el navegador (normalmente `http://localhost:5174`).
 
 En Linux, Docker Engine con permisos para tu usuario también es suficiente. Si cambiás
 la configuración del entorno, ejecutá **Dev Containers: Rebuild Container**.
@@ -67,7 +67,7 @@ Ejecutalos dentro del devcontainer:
 | Comando | Uso |
 | --- | --- |
 | `npm ci` | Instalar las versiones del lockfile |
-| `npm run dev` | Servidor de desarrollo accesible desde el puerto 5173 |
+| `npm run dev` | Servidor de desarrollo accesible desde el puerto 5174 |
 | `npm test` | Pruebas de persistencia e interfaz |
 | `npm run lint` | Análisis estático con Oxlint |
 | `npm run build` | Comprobar TypeScript y generar `dist/` |
