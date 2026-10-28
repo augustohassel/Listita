@@ -20,4 +20,14 @@ export interface Ranking {
   itemIds: number[]
 }
 
+export interface BackupData {
+  version: number
+  exportedAt: string
+  lists: List[]
+  items: Item[]
+  rankings: Ranking[]
+}
+
+export type NavTab = 'lists' | 'items' | 'rankings' | 'settings'
+
 export type RunAction = (action: () => Promise<unknown>) => Promise<boolean>

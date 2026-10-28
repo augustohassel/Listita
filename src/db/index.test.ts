@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { createList, createRanking, db, deleteItem, deleteList, saveItem, setRankingItems } from './index'
+import {
+  clearAllDatabase,
+  createList,
+  createRanking,
+  db,
+  deleteItem,
+  deleteList,
+  exportBackup,
+  importBackup,
+  loadDemoData,
+  saveItem,
+  setRankingItems,
+} from './index'
 
 const wine = { name: 'Malbec', notes: 'Frutado', attributes: { Bodega: 'Mendoza' } }
 
@@ -8,10 +20,14 @@ describe('listados y elementos', () => {
     const listId = await createList(' Vinos ', ' Vinos tintos ', [' Bodega ', 'Cepa'])
     const id = await saveItem(listId, wine)
     expect(await db.lists.get(listId)).toMatchObject({
-      name: 'Vinos', category: 'Vinos tintos', fields: ['Bodega', 'Cepa'],
+      name: 'Vinos',
+      category: 'Vinos tintos',
+      fields: ['Bodega', 'Cepa'],
     })
     expect(await db.items.get(id)).toMatchObject({
-      name: 'Malbec', notes: 'Frutado', attributes: { Bodega: 'Mendoza', Cepa: '' },
+      name: 'Malbec',
+      notes: 'Frutado',
+      attributes: { Bodega: 'Mendoza', Cepa: '' },
     })
     await saveItem(listId, { ...wine, notes: 'Para acompañar pastas' }, id)
     expect(await db.items.count()).toBe(1)
@@ -22,7 +38,9 @@ describe('listados y elementos', () => {
     await expect(createList(' ', '', [])).rejects.toThrow('nombre')
     await expect(createList('Vinos', '', ['Cepa', ' cepa '])).rejects.toThrow('atributos')
     await expect(createList('Vinos', '', [''])).rejects.toThrow('atributos')
-    await expect(createList('Vinos', '', Array.from({ length: 13 }, (_, i) => `Campo ${i}`))).rejects.toThrow('atributos')
+    await expect(
+      createList('Vinos', '', Array.from({ length: 13 }, (_, i) => `Campo ${i}`)),
+    ).rejects.toThrow('atributos')
     expect(await db.lists.count()).toBe(0)
     const listId = await createList('Vinos', '', [])
     await expect(saveItem(listId, { ...wine, name: ' ' })).rejects.toThrow('nombre')
@@ -43,11 +61,22 @@ describe('listados y elementos', () => {
     const listId = await createList('Prueba', '', ['constructor', '__proto__'])
     const id = await saveItem(listId, { ...wine, attributes: {} })
     expect((await db.items.get(id))?.attributes).toEqual(
-      Object.fromEntries([['constructor', ''], ['__proto__', '']]),
+      Object.fromEntries([
+        ['constructor', ''],
+        ['__proto__', ''],
+      ]),
     )
-    await saveItem(listId, {
-      ...wine, attributes: Object.fromEntries([['constructor', 'Texto'], ['__proto__', 'Nota']]),
-    }, id)
+    await saveItem(
+      listId,
+      {
+        ...wine,
+        attributes: Object.fromEntries([
+          ['constructor', 'Texto'],
+          ['__proto__', 'Nota'],
+        ]),
+      },
+      id,
+    )
     expect((await db.items.get(id))?.attributes.__proto__).toBe('Nota')
     expect(Object.prototype).not.toHaveProperty('listId')
   })
@@ -77,7 +106,9 @@ describe('rankings persistentes', () => {
     const foreignId = await saveItem(other, { ...wine, name: 'Bar' })
     const rankingId = await createRanking(listId, 'Favoritos')
     for (const ids of [[id, id], [999], [foreignId]]) {
-      await expect(setRankingItems(rankingId, ids)).rejects.toThrow('elementos distintos de su listado')
+      await expect(setRankingItems(rankingId, ids)).rejects.toThrow(
+        'elementos distintos de su listado',
+      )
       expect((await db.rankings.get(rankingId))?.itemIds).toEqual([id])
     }
     await expect(setRankingItems(999, [id])).rejects.toThrow('ranking ya no existe')
@@ -116,5 +147,77 @@ describe('rankings persistentes', () => {
     expect(await db.lists.toArray()).toEqual([expect.objectContaining({ id: other })])
     expect(await db.items.toArray()).toEqual([expect.objectContaining({ id: bar })])
     expect(await db.rankings.toArray()).toEqual([expect.objectContaining({ id: rankingId })])
+  })
+})
+
+describe('backups JSON, datos de demostración y vaciado transaccional', () => {
+  it('exporta e importa un backup JSON completo restaurando listados, elementos y rankings', async () => {
+    const listId = await createList('Vinos', 'Tintos', ['Bodega'])
+    const itemA = await saveItem(listId, wine)
+    const itemB = await saveItem(listId, { ...wine, name: 'Cabernet' })
+    const rankingId = await createRanking(listId, 'Top')
+    await setRankingItems(rankingId, [itemB, itemA])
+
+    const exported = await exportBackup()
+    await clearAllDatabase()
+    expect(await db.lists.count()).toBe(0)
+    expect(await db.items.count()).toBe(0)
+    expect(await db.rankings.count()).toBe(0)
+
+    const imported = await importBackup(exported)
+    expect(imported.lists).toHaveLength(1)
+    expect(await db.lists.count()).toBe(1)
+    expect(await db.items.count()).toBe(2)
+    expect((await db.rankings.get(rankingId))?.itemIds).toEqual([itemB, itemA])
+  })
+
+  it('rechaza un archivo JSON corrupto, vacío o con relaciones inválidas sin alterar los datos existentes', async () => {
+    const listId = await createList('Original', 'Cat', ['Origen'])
+    const itemId = await saveItem(listId, {
+      name: 'Café Colombia',
+      notes: 'Dulce',
+      attributes: { Origen: 'Huila' },
+    })
+
+    const invalidPayloads = [
+      '',
+      '{corrupto',
+      JSON.stringify({ lists: 'no-array' }),
+      JSON.stringify({
+        lists: [{ id: 1, name: '', category: '', fields: [] }],
+        items: [],
+        rankings: [],
+      }),
+      JSON.stringify({
+        lists: [{ id: 1, name: 'Lista', category: '', fields: [] }],
+        items: [{ id: 10, listId: 999, name: 'Huérfano', notes: '', attributes: {} }],
+        rankings: [],
+      }),
+      JSON.stringify({
+        lists: [{ id: 1, name: 'Lista', category: '', fields: [] }],
+        items: [{ id: 10, listId: 1, name: 'Item', notes: '', attributes: {} }],
+        rankings: [{ id: 20, listId: 1, name: 'Rank', itemIds: [10, 10] }],
+      }),
+    ]
+
+    for (const payload of invalidPayloads) {
+      await expect(importBackup(payload)).rejects.toThrow()
+      expect(await db.lists.count()).toBe(1)
+      expect((await db.lists.get(listId))?.name).toBe('Original')
+      expect((await db.items.get(itemId))?.name).toBe('Café Colombia')
+    }
+  })
+
+  it('carga datos de demostración y vacía la base de datos de forma transaccional', async () => {
+    const firstId = await loadDemoData()
+    expect(firstId).toBeDefined()
+    expect(await db.lists.count()).toBeGreaterThanOrEqual(2)
+    expect(await db.items.count()).toBeGreaterThanOrEqual(6)
+    expect(await db.rankings.count()).toBeGreaterThanOrEqual(3)
+
+    await clearAllDatabase()
+    expect(await db.lists.count()).toBe(0)
+    expect(await db.items.count()).toBe(0)
+    expect(await db.rankings.count()).toBe(0)
   })
 })
