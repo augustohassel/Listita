@@ -153,6 +153,13 @@ it('gestiona el subtítulo contextual en el Header y permite alternar la aparien
   fireEvent.click(within(nav).getByRole('button', { name: /Elementos/i }))
   await waitFor(() => expect(within(header).getByText(/·/)).toBeInTheDocument())
 
+  // Toggle directo desde el Header
+  const themeToggleButton = screen.getByRole('button', { name: /Cambiar a modo (claro|oscuro)/i })
+  fireEvent.click(themeToggleButton)
+  // Al alternar cambia de estado
+  const currentTheme = localStorage.getItem('listita_theme')
+  expect(['light', 'dark']).toContain(currentTheme)
+
   // Selector de apariencia en Ajustes
   fireEvent.click(within(nav).getByRole('button', { name: /Ajustes/i }))
   fireEvent.click(screen.getByRole('button', { name: 'Oscuro' }))

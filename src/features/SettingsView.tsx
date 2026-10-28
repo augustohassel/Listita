@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
   Database,
   Download,
   HardDrive,
-  Monitor,
   Moon,
   ShieldCheck,
   Sparkles,
@@ -13,24 +12,23 @@ import {
   Upload,
 } from 'lucide-react'
 import { clearAllDatabase, db, exportBackup, importBackup, loadDemoData } from '../db'
-import type { RunAction } from '../types'
-
-type ThemePreference = 'system' | 'light' | 'dark'
-
-function applyTheme(theme: ThemePreference) {
-  if (typeof window === 'undefined') return
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  const isDark = theme === 'dark' || (theme === 'system' && prefersDark)
-  document.documentElement.classList.toggle('dark', isDark)
-}
+import type { RunAction, ThemeMode } from '../types'
 
 interface Props {
   run: RunAction
   onToast: (message: string) => void
   onDataLoaded?: (firstListId?: number) => void
+  theme?: ThemeMode
+  onSelectTheme?: (theme: ThemeMode) => void
 }
 
-export function SettingsView({ run, onToast, onDataLoaded }: Props) {
+export function SettingsView({
+  run,
+  onToast,
+  onDataLoaded,
+  theme,
+  onSelectTheme,
+}: Props) {
   const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.1.0'
   const listsCount = useLiveQuery(() => db.lists.count(), []) ?? 0
   const itemsCount = useLiveQuery(() => db.items.count(), []) ?? 0
@@ -38,35 +36,29 @@ export function SettingsView({ run, onToast, onDataLoaded }: Props) {
   const [confirmClear, setConfirmClear] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [theme, setTheme] = useState<ThemePreference>(() => {
+  const [internalTheme, setInternalTheme] = useState<ThemeMode>(() => {
     if (typeof localStorage !== 'undefined') {
       const stored = localStorage.getItem('listita_theme')
-      if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
+      if (stored === 'light' || stored === 'dark') return stored
     }
-    return 'system'
+    return 'dark'
   })
 
-  useEffect(() => {
-    if (theme !== 'system' || typeof window === 'undefined') return
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const listener = (event: MediaQueryListEvent) => {
-      document.documentElement.classList.toggle('dark', event.matches)
-    }
-    media.addEventListener('change', listener)
-    return () => media.removeEventListener('change', listener)
-  }, [theme])
+  const currentTheme = theme ?? internalTheme
 
-  function handleThemeChange(newTheme: ThemePreference) {
-    setTheme(newTheme)
-    try {
-      localStorage.setItem('listita_theme', newTheme)
-    } catch {
-      // Storage unavailable or disabled
+  function handleThemeChange(newTheme: ThemeMode) {
+    if (onSelectTheme) {
+      onSelectTheme(newTheme)
+    } else {
+      setInternalTheme(newTheme)
+      try {
+        localStorage.setItem('listita_theme', newTheme)
+      } catch {
+        // Storage unavailable
+      }
+      document.documentElement.classList.toggle('dark', newTheme === 'dark')
     }
-    applyTheme(newTheme)
-    onToast(
-      `Tema ${newTheme === 'system' ? 'del sistema' : newTheme === 'light' ? 'claro' : 'oscuro'} aplicado.`,
-    )
+    onToast(`Tema ${newTheme === 'dark' ? 'oscuro' : 'claro'} activado.`)
   }
 
   async function handleExport() {
@@ -158,19 +150,18 @@ export function SettingsView({ run, onToast, onDataLoaded }: Props) {
           <h3 className="text-sm font-bold text-ink">Apariencia</h3>
         </div>
         <p className="text-xs text-ink-muted leading-relaxed">
-          Elegí si preferís un tema claro, oscuro o sincronizado con tu dispositivo.
+          Elegí si preferís un tema claro u oscuro para la interfaz.
         </p>
 
-        <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-surface/80 border border-line/30">
+        <div className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-surface/80 border border-line/30">
           {(
             [
-              { id: 'system', label: 'Sistema', icon: Monitor },
               { id: 'light', label: 'Claro', icon: Sun },
               { id: 'dark', label: 'Oscuro', icon: Moon },
             ] as const
           ).map((opt) => {
             const Icon = opt.icon
-            const active = theme === opt.id
+            const active = currentTheme === opt.id
             return (
               <button
                 key={opt.id}

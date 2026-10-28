@@ -19,9 +19,11 @@ import { createList, db, loadDemoData } from './db'
 import { ListDetail } from './features/ListDetail'
 import { Rankings } from './features/Rankings'
 import { SettingsView } from './features/SettingsView'
+import { useTheme } from './hooks/useTheme'
 import type { NavTab, RunAction } from './types'
 
 export default function App() {
+  const { theme, setTheme, toggleTheme } = useTheme()
   const lists = useLiveQuery(() => db.lists.toArray())
   const allItems = useLiveQuery(() => db.items.toArray())
   const allRankings = useLiveQuery(() => db.rankings.toArray())
@@ -126,8 +128,12 @@ export default function App() {
   })
 
   return (
-    <div className="min-h-screen bg-base text-ink flex flex-col">
-      <Header subtitle={headerSubtitle} />
+    <div className="min-h-screen bg-base text-ink flex flex-col transition-colors duration-200">
+      <Header
+        subtitle={headerSubtitle}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+      />
 
       <main className="flex-1 w-full max-w-lg mx-auto px-4 pt-4 pb-28 space-y-4">
         {error && (
@@ -385,6 +391,8 @@ export default function App() {
               onDataLoaded={(firstListId) => {
                 setSelectedId(firstListId)
               }}
+              theme={theme}
+              onSelectTheme={setTheme}
             />
           )}
         </fieldset>
