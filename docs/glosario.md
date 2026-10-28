@@ -24,3 +24,14 @@ Este documento registra las entidades y conceptos funcionales de **Listita** par
 - **Alcance / Propósito**: Permite comparar y priorizar elementos de un mismo listado bajo distintos criterios subjetivos del usuario. Al crearse incluye todos los elementos existentes del listado en ese momento; los elementos creados con posterioridad no se agregan automáticamente a rankings ya existentes.
 - **Lo que NO es**: No es un ranking calculado por puntaje, fórmula o promedio ponderado.
 
+### Copia de Seguridad (`BackupData`)
+- **Definición**: Archivo JSON estructurado y versionado que contiene la totalidad de las colecciones locales (`lists`, `items` y `rankings`) junto con la fecha de exportación (`exportedAt`).
+- **Alcance / Propósito**: Permite resguardar los datos locales fuera del navegador y restaurarlos de manera atómica (`db.transaction`) tras validar esquema e integridad referencial (pertenencia de elementos y rankings a sus listados).
+- **Lo que NO es**: No es un servicio de sincronización automática en la nube ni reemplaza validaciones de integridad al importar.
+
+### Dataset de Demostración (`DemoData`)
+- **Definición**: Conjunto curado de listados de ejemplo (como vinos tintos y cafés de especialidad) con atributos personalizados, elementos con notas y rankings prearmados.
+- **Alcance / Propósito**: Permite explorar las capacidades visuales y funcionales de la aplicación con un toque desde el estado vacío o desde la vista de Ajustes, sin alterar la regla de inicio limpio por defecto.
+- **Lo que NO es**: No es contenido fijo obligatorio ni impide que el usuario lo edite o elimine como cualquier otro listado.
+
+
