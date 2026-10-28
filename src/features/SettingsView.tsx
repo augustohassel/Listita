@@ -19,6 +19,7 @@ interface Props {
 }
 
 export function SettingsView({ run, onToast, onDataLoaded }: Props) {
+  const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.1.0'
   const listsCount = useLiveQuery(() => db.lists.count(), []) ?? 0
   const itemsCount = useLiveQuery(() => db.items.count(), []) ?? 0
   const rankingsCount = useLiveQuery(() => db.rankings.count(), []) ?? 0
@@ -202,6 +203,12 @@ export function SettingsView({ run, onToast, onDataLoaded }: Props) {
             <span>Borrar todos los datos</span>
           </button>
         )}
+      </div>
+
+      <div className="pt-2 pb-6 text-center">
+        <p className="text-[11px] font-mono text-slate-500">
+          Listita <span className="text-slate-400 font-semibold">v{version}</span> • PWA Local
+        </p>
       </div>
     </section>
   )

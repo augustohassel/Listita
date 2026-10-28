@@ -113,6 +113,9 @@ it('permite cargar datos demo, rechaza backups corruptos en Ajustes sin alterar 
   const nav = await screen.findByRole('navigation', { name: 'Navegación principal' })
   fireEvent.click(within(nav).getByRole('button', { name: /Ajustes/i }))
 
+  const settingsSection = screen.getByRole('region', { name: 'Ajustes y datos locales' })
+  expect(settingsSection).toHaveTextContent(/Listita\s+v\d+\.\d+\.\d+\s+•\s+PWA Local/)
+
   fireEvent.click(screen.getByRole('button', { name: /Cargar datos de demostración/i }))
   await waitFor(async () => expect(await db.lists.count()).toBeGreaterThanOrEqual(2))
   const initialCount = await db.lists.count()
