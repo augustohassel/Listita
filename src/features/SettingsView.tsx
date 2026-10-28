@@ -21,11 +21,7 @@ function applyTheme(theme: ThemePreference) {
   if (typeof window === 'undefined') return
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
   const isDark = theme === 'dark' || (theme === 'system' && prefersDark)
-  if (isDark) {
-    document.documentElement.classList.add('dark')
-  } else {
-    document.documentElement.classList.remove('dark')
-  }
+  document.documentElement.classList.toggle('dark', isDark)
 }
 
 interface Props {
@@ -54,11 +50,7 @@ export function SettingsView({ run, onToast, onDataLoaded }: Props) {
     if (theme !== 'system' || typeof window === 'undefined') return
     const media = window.matchMedia('(prefers-color-scheme: dark)')
     const listener = (event: MediaQueryListEvent) => {
-      if (event.matches) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
+      document.documentElement.classList.toggle('dark', event.matches)
     }
     media.addEventListener('change', listener)
     return () => media.removeEventListener('change', listener)
