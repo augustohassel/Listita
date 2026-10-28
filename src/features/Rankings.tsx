@@ -1,5 +1,6 @@
 import { useState, type SubmitEvent } from 'react'
-import { ArrowDown, ArrowUp, Award, Plus, Trash2, Trophy, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, Award, Plus, Trash2, Trophy } from 'lucide-react'
+import { ModalSheet } from '../components/layout/ModalSheet'
 import { createRanking, deleteRanking, setRankingItems } from '../db'
 import type { Item, List, Ranking, RunAction } from '../types'
 
@@ -357,69 +358,45 @@ export function Rankings({
       )}
 
       {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Crear nuevo ranking"
+        <ModalSheet
+          title="Nuevo ranking"
+          subtitle={`Incluirá los ${items.length} elementos actuales para que los ordenes.`}
+          ariaLabel="Crear nuevo ranking"
+          icon={Trophy}
+          closeLabel="Cerrar modal de ranking"
+          maxWidthClass="max-w-md"
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={submit}
         >
-          <form
-            onSubmit={submit}
-            className="w-full max-w-md glass-panel rounded-t-3xl sm:rounded-3xl border border-slate-700/70 p-5 sm:p-6 space-y-4 shadow-2xl"
-          >
-            <div className="w-10 h-1 bg-slate-700 rounded-full mx-auto mb-1 sm:hidden" />
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <Trophy className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-base font-bold text-slate-100">Nuevo ranking</h4>
-                  <p className="text-xs text-slate-400">
-                    Incluirá los {items.length} elementos actuales para que los ordenes.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                aria-label="Cerrar modal de ranking"
-                className="touch-target p-2 rounded-xl bg-slate-800/80 text-slate-300 border border-slate-700/60 flex items-center justify-center"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+          <label className="block space-y-1.5 text-xs font-semibold text-slate-300">
+            <span>Nombre del ranking</span>
+            <input
+              required
+              maxLength={120}
+              placeholder="Mis favoritos, Precio/calidad…"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+            />
+          </label>
 
-            <label className="block space-y-1.5 text-xs font-semibold text-slate-300">
-              <span>Nombre del ranking</span>
-              <input
-                required
-                maxLength={120}
-                placeholder="Mis favoritos, Precio/calidad…"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
-              />
-            </label>
-
-            <div className="flex items-center justify-end gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="touch-target px-4 py-2.5 rounded-xl bg-slate-800/90 text-slate-200 text-xs font-semibold border border-slate-700/70"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={!items.length}
-                className="touch-target px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 disabled:opacity-40"
-              >
-                Crear ranking
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="flex items-center justify-end gap-2.5 pt-2">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="touch-target px-4 py-2.5 rounded-xl bg-slate-800/90 text-slate-200 text-xs font-semibold border border-slate-700/70"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={!items.length}
+              className="touch-target px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 disabled:opacity-40"
+            >
+              Crear ranking
+            </button>
+          </div>
+        </ModalSheet>
       )}
     </section>
   )
