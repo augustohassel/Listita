@@ -32,7 +32,7 @@ export function ListDetail({
 
   if (!items || !rankings) {
     return (
-      <p role="status" className="text-center text-sm text-slate-400 py-8">
+      <p role="status" className="text-center text-sm text-ink-muted py-8">
         Cargando listado…
       </p>
     )
@@ -54,8 +54,8 @@ export function ListDetail({
                 onClick={() => onSelectList(entry.id)}
                 className={`touch-target shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
                   active
-                    ? 'bg-amber-500 text-slate-950 shadow-sm'
-                    : 'bg-slate-900/90 text-slate-300 border border-slate-800 hover:border-slate-700'
+                    ? 'bg-accent text-on-accent shadow-sm'
+                    : 'bg-surface/90 text-ink-muted border border-line/20 hover:border-line/40'
                 }`}
               >
                 {entry.name}
@@ -68,10 +68,10 @@ export function ListDetail({
       <div className="glass-card rounded-2xl p-4 sm:p-5 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-wider font-semibold text-amber-400">
+            <p className="text-[11px] uppercase tracking-wider font-semibold text-accent">
               {list.category || 'Listado personal'}
             </p>
-            <h2 className="text-lg font-extrabold text-slate-100 leading-snug">{list.name}</h2>
+            <h2 className="text-lg font-extrabold text-ink leading-snug">{list.name}</h2>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -79,7 +79,7 @@ export function ListDetail({
               <button
                 type="button"
                 onClick={onOpenRankings}
-                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-amber-300 border border-slate-700/70 text-xs font-semibold"
+                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface/90 hover:bg-surface text-accent border border-line/25 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-accent"
               >
                 <Trophy className="w-3.5 h-3.5" />
                 <span>Rankings ({rankings.length})</span>
@@ -96,14 +96,14 @@ export function ListDetail({
                       onToast?.('Listado eliminado.')
                     })
                   }}
-                  className="touch-target px-3 py-1.5 rounded-xl bg-rose-500 text-white text-xs font-bold"
+                  className="touch-target px-3 py-1.5 rounded-xl bg-red-500 text-white text-xs font-bold"
                 >
                   Confirmar eliminación
                 </button>
                 <button
                   type="button"
                   onClick={() => setConfirmDeleteList(false)}
-                  className="touch-target px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+                  className="touch-target px-2.5 py-1.5 rounded-xl bg-surface text-ink-muted border border-line/20 text-xs font-semibold"
                 >
                   Cancelar
                 </button>
@@ -112,7 +112,7 @@ export function ListDetail({
               <button
                 type="button"
                 onClick={() => setConfirmDeleteList(true)}
-                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 text-xs font-semibold transition-colors"
+                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/25 text-xs font-semibold transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Eliminar listado</span>
@@ -126,9 +126,9 @@ export function ListDetail({
             {list.fields.map((field) => (
               <span
                 key={field}
-                className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-slate-900/80 text-slate-300 border border-slate-700/60"
+                className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-surface/80 text-ink-muted border border-line/20"
               >
-                <Tag className="w-2.5 h-2.5 text-amber-400" />
+                <Tag className="w-2.5 h-2.5 text-accent" />
                 {field}
               </span>
             ))}
@@ -139,8 +139,8 @@ export function ListDetail({
       <section className="space-y-3" aria-labelledby="items-heading">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Package className="w-4 h-4 text-amber-400" />
-            <h3 id="items-heading" className="text-sm font-bold text-slate-200">
+            <Package className="w-4 h-4 text-accent" />
+            <h3 id="items-heading" className="text-sm font-bold text-ink">
               Elementos ({items.length})
             </h3>
           </div>
@@ -151,7 +151,7 @@ export function ListDetail({
               setEditingId(undefined)
               setIsCreatingItem(true)
             }}
-            className="touch-target inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20"
+            className="touch-target inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-accent to-accent-2 hover:opacity-95 text-on-accent font-bold text-xs shadow-lg shadow-accent/20 focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <Plus className="w-4 h-4" />
             <span>Nuevo elemento</span>
@@ -160,7 +160,7 @@ export function ListDetail({
 
         {!items.length && (
           <div className="glass-card rounded-2xl p-6 text-center space-y-3">
-            <p className="text-sm text-slate-300">
+            <p className="text-sm text-ink-muted">
               Todavía no hay elementos. Agregá el primero con sus particularidades.
             </p>
             <button
@@ -169,7 +169,7 @@ export function ListDetail({
                 setEditingId(undefined)
                 setIsCreatingItem(true)
               }}
-              className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold"
+              className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-accent/15 border border-accent/30 text-accent text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <Plus className="w-4 h-4" />
               <span>Agregar elemento</span>
@@ -186,7 +186,7 @@ export function ListDetail({
           return (
             <article className="glass-card rounded-2xl p-4 space-y-3" key={item.id}>
               <div className="flex items-start justify-between gap-3">
-                <h4 className="text-base font-bold text-slate-100 leading-snug">{item.name}</h4>
+                <h4 className="text-base font-bold text-ink leading-snug">{item.name}</h4>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     type="button"
@@ -195,9 +195,9 @@ export function ListDetail({
                       setIsCreatingItem(false)
                       setEditingId(item.id)
                     }}
-                    className="touch-target px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-slate-200 border border-slate-700/70 text-xs font-semibold inline-flex items-center gap-1"
+                    className="touch-target px-2.5 py-1.5 rounded-xl bg-surface/90 hover:bg-surface text-ink border border-line/25 text-xs font-semibold inline-flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-accent"
                   >
-                    <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                    <Edit3 className="w-3.5 h-3.5 text-accent" />
                     <span>Editar</span>
                   </button>
 
@@ -213,14 +213,14 @@ export function ListDetail({
                             onToast?.('Elemento eliminado.')
                           })
                         }}
-                        className="touch-target px-2.5 py-1.5 rounded-xl bg-rose-500 text-white text-xs font-bold"
+                        className="touch-target px-2.5 py-1.5 rounded-xl bg-red-500 text-white text-xs font-bold"
                       >
                         Confirmar
                       </button>
                       <button
                         type="button"
                         onClick={() => setConfirmDeleteItemId(undefined)}
-                        className="touch-target px-2 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+                        className="touch-target px-2 py-1.5 rounded-xl bg-surface text-ink-muted border border-line/20 text-xs font-semibold"
                       >
                         Cancelar
                       </button>
@@ -230,7 +230,7 @@ export function ListDetail({
                       type="button"
                       aria-label={`Eliminar ${item.name}`}
                       onClick={() => setConfirmDeleteItemId(item.id)}
-                      className="touch-target px-2.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 text-xs font-semibold inline-flex items-center gap-1"
+                      className="touch-target px-2.5 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/25 text-xs font-semibold inline-flex items-center gap-1 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Eliminar</span>
@@ -246,10 +246,10 @@ export function ListDetail({
                     .map((field) => (
                       <div
                         key={field}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-900/80 border border-slate-800 text-xs"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-surface/80 border border-line/20 text-xs"
                       >
-                        <dt className="text-slate-400 font-medium">{field}:</dt>
-                        <dd className="m-0 text-amber-300 font-semibold">
+                        <dt className="text-ink-muted font-medium">{field}:</dt>
+                        <dd className="m-0 text-accent font-semibold">
                           {item.attributes[field]}
                         </dd>
                       </div>
@@ -259,7 +259,7 @@ export function ListDetail({
 
               {item.notes && (
                 <div className="space-y-1">
-                  <p className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed bg-slate-900/50 rounded-xl p-3 border border-slate-800/70">
+                  <p className="text-xs text-ink-muted whitespace-pre-wrap leading-relaxed bg-surface/50 rounded-xl p-3 border border-line/15">
                     {visibleNote}
                   </p>
                   {isLongNote && (
@@ -271,7 +271,7 @@ export function ListDetail({
                           [item.id]: !prev[item.id],
                         }))
                       }
-                      className="text-xs font-semibold text-amber-400 hover:text-amber-300"
+                      className="text-xs font-semibold text-accent hover:opacity-80"
                     >
                       {isExpanded ? 'Ver menos' : 'Ver nota completa'}
                     </button>

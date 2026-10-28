@@ -18,28 +18,32 @@ interface Props {
 function getPodiumStyle(index: number) {
   if (index === 0) {
     return {
-      card: 'bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-slate-900/70 border-amber-400/50 shadow-md shadow-amber-500/10',
+      card: 'bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-surface/70 border-amber-400/50 shadow-md shadow-amber-500/10',
       badge: 'bg-gradient-to-br from-amber-300 to-amber-500 text-slate-950 ring-2 ring-amber-300/40',
+      pill: 'bg-surface/80 text-amber-300 border border-amber-500/30',
       label: '#1 Oro',
     }
   }
   if (index === 1) {
     return {
-      card: 'bg-gradient-to-r from-slate-300/12 via-slate-400/5 to-slate-900/70 border-slate-400/40',
+      card: 'bg-gradient-to-r from-slate-300/12 via-slate-400/5 to-surface/70 border-slate-400/40',
       badge: 'bg-gradient-to-br from-slate-200 to-slate-400 text-slate-950 ring-2 ring-slate-300/30',
+      pill: 'bg-surface/80 text-slate-300 border border-slate-400/30',
       label: '#2 Plata',
     }
   }
   if (index === 2) {
     return {
-      card: 'bg-gradient-to-r from-orange-500/15 via-orange-600/5 to-slate-900/70 border-orange-500/40',
+      card: 'bg-gradient-to-r from-orange-500/15 via-orange-600/5 to-surface/70 border-orange-500/40',
       badge: 'bg-gradient-to-br from-orange-400 to-amber-700 text-white ring-2 ring-orange-400/30',
+      pill: 'bg-surface/80 text-orange-300 border border-orange-500/30',
       label: '#3 Bronce',
     }
   }
   return {
-    card: 'glass-card border-slate-800/80',
-    badge: 'bg-slate-800 text-slate-300 border border-slate-700',
+    card: 'glass-card border-line/20',
+    badge: 'bg-surface text-ink-muted border border-line/20',
+    pill: 'bg-surface text-ink-muted border border-line/20',
     label: `#${index + 1}`,
   }
 }
@@ -98,8 +102,8 @@ export function Rankings({
                 onClick={() => onSelectList(entry.id)}
                 className={`touch-target shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
                   active
-                    ? 'bg-amber-500 text-slate-950 shadow-sm'
-                    : 'bg-slate-900/90 text-slate-300 border border-slate-800 hover:border-slate-700'
+                    ? 'bg-accent text-on-accent shadow-sm'
+                    : 'bg-surface/90 text-ink-muted border border-line/20 hover:border-line/40'
                 }`}
               >
                 {entry.name}
@@ -112,12 +116,12 @@ export function Rankings({
       <div className="glass-card rounded-2xl p-4 flex items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-400 shrink-0" />
-            <h3 id="rankings-heading" className="text-base font-bold text-slate-100 truncate">
+            <Trophy className="w-4 h-4 text-accent shrink-0" />
+            <h3 id="rankings-heading" className="text-base font-bold text-ink truncate">
               Rankings {listName ? `· ${listName}` : ''}
             </h3>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-ink-muted mt-0.5">
             Ordená manualmente tus favoritos. El podio destaca tu top 3.
           </p>
         </div>
@@ -126,7 +130,7 @@ export function Rankings({
           type="button"
           disabled={!items.length}
           onClick={() => setIsModalOpen(true)}
-          className="touch-target shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 disabled:opacity-40"
+          className="touch-target shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-accent to-accent-2 hover:opacity-95 text-on-accent font-bold text-xs shadow-lg shadow-accent/20 disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-accent"
         >
           <Plus className="w-4 h-4" />
           <span>Nuevo ranking</span>
@@ -135,10 +139,10 @@ export function Rankings({
 
       {!items.length && (
         <div className="glass-card rounded-2xl p-6 text-center space-y-1">
-          <p className="text-sm font-medium text-slate-200">
+          <p className="text-sm font-medium text-ink">
             Agregá un elemento para empezar a armar rankings.
           </p>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-ink-muted">
             Cada ranking comienza con los elementos existentes del listado.
           </p>
         </div>
@@ -146,11 +150,11 @@ export function Rankings({
 
       {items.length > 0 && !rankings.length && (
         <div className="glass-card rounded-2xl p-6 text-center space-y-3">
-          <p className="text-sm text-slate-300">Todavía no hay rankings en este listado.</p>
+          <p className="text-sm text-ink-muted">Todavía no hay rankings en este listado.</p>
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold"
+            className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-accent/15 border border-accent/30 text-accent text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <Plus className="w-4 h-4" />
             <span>Crear ranking</span>
@@ -171,8 +175,8 @@ export function Rankings({
                 onClick={() => setSelectedRankingId(r.id)}
                 className={`touch-target shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
                   isSelected
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 shadow-md shadow-amber-500/20'
-                    : 'bg-slate-900/80 text-slate-300 border border-slate-800 hover:border-slate-700'
+                    ? 'bg-gradient-to-r from-accent to-accent-2 text-on-accent shadow-md shadow-accent/20'
+                    : 'bg-surface/80 text-ink-muted border border-line/20 hover:border-line/40'
                 }`}
               >
                 <Award className="w-3.5 h-3.5" />
@@ -191,10 +195,10 @@ export function Rankings({
         >
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div>
-              <span className="text-[10px] uppercase tracking-wider font-semibold text-amber-400">
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-accent">
                 Ranking manual
               </span>
-              <h4 className="text-base font-bold text-slate-100">{activeRanking.name}</h4>
+              <h4 className="text-base font-bold text-ink">{activeRanking.name}</h4>
             </div>
 
             {confirmDeleteId === activeRanking.id ? (
@@ -209,14 +213,14 @@ export function Rankings({
                       onToast?.('Ranking eliminado.')
                     })
                   }}
-                  className="touch-target px-3 py-1.5 rounded-xl bg-rose-500 text-white text-xs font-bold"
+                  className="touch-target px-3 py-1.5 rounded-xl bg-red-500 text-white text-xs font-bold"
                 >
                   Confirmar eliminación
                 </button>
                 <button
                   type="button"
                   onClick={() => setConfirmDeleteId(undefined)}
-                  className="touch-target px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+                  className="touch-target px-3 py-1.5 rounded-xl bg-surface text-ink-muted border border-line/20 text-xs font-semibold"
                 >
                   Cancelar
                 </button>
@@ -225,7 +229,7 @@ export function Rankings({
               <button
                 type="button"
                 onClick={() => setConfirmDeleteId(activeRanking.id)}
-                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 text-xs font-semibold transition-colors"
+                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/25 text-xs font-semibold transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Eliminar ranking</span>
@@ -234,7 +238,7 @@ export function Rankings({
           </div>
 
           {activeRanking.itemIds.length === 0 && (
-            <p className="text-xs text-slate-400 py-3 text-center">
+            <p className="text-xs text-ink-muted py-3 text-center">
               Este ranking está vacío. Agregá elementos desde el selector.
             </p>
           )}
@@ -259,11 +263,11 @@ export function Rankings({
                     </span>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-sm text-slate-100 truncate">
+                        <span className="font-semibold text-sm text-ink truncate">
                           {item.name}
                         </span>
                         {index < 3 && (
-                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-900/70 text-amber-300 border border-amber-500/30">
+                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${podium.pill}`}>
                             {podium.label}
                           </span>
                         )}
@@ -276,7 +280,7 @@ export function Rankings({
                             .map(([key, val]) => (
                               <span
                                 key={key}
-                                className="text-[11px] text-slate-300 bg-slate-900/70 px-2 py-0.5 rounded-md border border-slate-800"
+                                className="text-[11px] text-ink-muted bg-surface/70 px-2 py-0.5 rounded-md border border-line/20"
                               >
                                 {key}: {val}
                               </span>
@@ -292,7 +296,7 @@ export function Rankings({
                       aria-label={`Subir ${item.name}`}
                       disabled={index === 0}
                       onClick={() => move(activeRanking, index, -1)}
-                      className="touch-target p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700/70 disabled:opacity-35 flex items-center justify-center"
+                      className="touch-target p-2 rounded-xl bg-surface/80 hover:bg-surface text-ink border border-line/25 disabled:opacity-35 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent"
                     >
                       <ArrowUp className="w-4 h-4" />
                     </button>
@@ -301,7 +305,7 @@ export function Rankings({
                       aria-label={`Bajar ${item.name}`}
                       disabled={index === activeRanking.itemIds.length - 1}
                       onClick={() => move(activeRanking, index, 1)}
-                      className="touch-target p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700/70 disabled:opacity-35 flex items-center justify-center"
+                      className="touch-target p-2 rounded-xl bg-surface/80 hover:bg-surface text-ink border border-line/25 disabled:opacity-35 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent"
                     >
                       <ArrowDown className="w-4 h-4" />
                     </button>
@@ -316,7 +320,7 @@ export function Rankings({
                           ),
                         )
                       }
-                      className="touch-target px-2.5 py-2 rounded-xl bg-slate-900/80 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border border-slate-700/70 text-xs font-medium"
+                      className="touch-target px-2.5 py-2 rounded-xl bg-surface/80 hover:bg-red-500/20 text-ink-muted hover:text-red-300 border border-line/25 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-red-400"
                     >
                       Quitar
                     </button>
@@ -327,8 +331,8 @@ export function Rankings({
           </ol>
 
           {items.some((item) => !activeRanking.itemIds.includes(item.id)) && (
-            <div className="pt-2 border-t border-slate-800/80">
-              <label className="block space-y-1.5 text-xs font-semibold text-slate-300">
+            <div className="pt-2 border-t border-line/20">
+              <label className="block space-y-1.5 text-xs font-semibold text-ink-muted">
                 <span>Agregar al ranking</span>
                 <select
                   value=""
@@ -340,13 +344,13 @@ export function Rankings({
                       )
                     }
                   }}
-                  className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500"
+                  className="w-full rounded-xl bg-surface/90 border border-line/25 px-3.5 py-2.5 text-sm text-ink focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
                 >
-                  <option value="">Elegí un elemento…</option>
+                  <option value="" className="bg-surface-2 text-ink">Elegí un elemento…</option>
                   {items
                     .filter((item) => !activeRanking.itemIds.includes(item.id))
                     .map((item) => (
-                      <option value={item.id} key={item.id}>
+                      <option value={item.id} key={item.id} className="bg-surface-2 text-ink">
                         {item.name}
                       </option>
                     ))}
@@ -368,7 +372,7 @@ export function Rankings({
           onClose={() => setIsModalOpen(false)}
           onSubmit={submit}
         >
-          <label className="block space-y-1.5 text-xs font-semibold text-slate-300">
+          <label className="block space-y-1.5 text-xs font-semibold text-ink-muted">
             <span>Nombre del ranking</span>
             <input
               required
@@ -376,7 +380,7 @@ export function Rankings({
               placeholder="Mis favoritos, Precio/calidad…"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              className="w-full rounded-xl bg-slate-900/90 border border-slate-700/80 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+              className="w-full rounded-xl bg-surface/90 border border-line/25 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted/70 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
             />
           </label>
 
@@ -384,14 +388,14 @@ export function Rankings({
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="touch-target px-4 py-2.5 rounded-xl bg-slate-800/90 text-slate-200 text-xs font-semibold border border-slate-700/70"
+              className="touch-target px-4 py-2.5 rounded-xl bg-surface/90 hover:bg-surface text-ink text-xs font-semibold border border-line/25 focus:outline-none focus:ring-2 focus:ring-accent"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={!items.length}
-              className="touch-target px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 disabled:opacity-40"
+              className="touch-target px-5 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-2 hover:opacity-95 text-on-accent font-bold text-xs shadow-lg shadow-accent/20 disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-accent"
             >
               Crear ranking
             </button>
