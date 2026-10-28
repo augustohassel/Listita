@@ -37,7 +37,7 @@ Este documento registra las entidades y conceptos funcionales de **Listita** par
 ### Tokens Semánticos de Color
 - **Definición**: Nombres de color vinculados a su función en la interfaz (`base`, `surface`, `surface-2`, `line`, `ink`, `ink-muted`, `accent`, `accent-2`, `on-accent`) definidos centralizadamente como variables CSS en canales RGB y consumidos en Tailwind.
 - **Alcance / Propósito**: Estandariza la paleta visual desacoplando los componentes del valor hexadecimal concreto, permitiendo transparencias dinámicas y garantizando contraste accesible (WCAG $\ge 4.5:1$).
-- **Lo que NO es**: No son clases utilitarias de color directo (`slate-*`, `amber-*`) ni temas dinámicos en tiempo de ejecución.
+- **Lo que NO es**: No son clases utilitarias de color directo hardcodeadas en componentes ni esquemas rígidos monocolor.
 
 
 

@@ -112,7 +112,7 @@ export function ListDetail({
               <button
                 type="button"
                 onClick={() => setConfirmDeleteList(true)}
-                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/25 text-xs font-semibold transition-colors"
+                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-300 border border-red-500/25 text-xs font-semibold transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Eliminar listado</span>
@@ -230,7 +230,7 @@ export function ListDetail({
                       type="button"
                       aria-label={`Eliminar ${item.name}`}
                       onClick={() => setConfirmDeleteItemId(item.id)}
-                      className="touch-target px-2.5 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/25 text-xs font-semibold inline-flex items-center gap-1 transition-colors"
+                      className="touch-target px-2.5 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-300 border border-red-500/25 text-xs font-semibold inline-flex items-center gap-1 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Eliminar</span>

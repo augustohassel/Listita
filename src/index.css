@@ -6,18 +6,33 @@
   :root {
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
+    color-scheme: light;
+
+    /* Apple HIG Light Palette (RGB channels) */
+    --c-base: 242 242 247;
+    --c-surface: 255 255 255;
+    --c-surface-2: 255 255 255;
+    --c-line: 209 209 214;
+    --c-ink: 28 28 30;
+    --c-ink-muted: 142 142 147;
+    --c-accent: 131 38 79;
+    --c-accent-2: 155 51 97;
+    --c-on-accent: 255 255 255;
+  }
+
+  .dark {
     color-scheme: dark;
 
-    /* Semantic color palette channels (R G B) */
-    --c-base: 64 13 27;
-    --c-surface: 76 33 63;
-    --c-surface-2: 87 15 51;
-    --c-line: 205 176 204;
-    --c-ink: 245 233 243;
-    --c-ink-muted: 205 176 204;
-    --c-accent: 228 167 216;
-    --c-accent-2: 205 176 204;
-    --c-on-accent: 64 13 27;
+    /* Apple HIG Dark Palette (RGB channels) */
+    --c-base: 0 0 0;
+    --c-surface: 28 28 30;
+    --c-surface-2: 44 44 46;
+    --c-line: 56 56 58;
+    --c-ink: 242 242 247;
+    --c-ink-muted: 142 142 147;
+    --c-accent: 217 119 182;
+    --c-accent-2: 192 132 252;
+    --c-on-accent: 28 28 30;
   }
 
   html {
@@ -39,17 +54,29 @@
 
 /* Glassmorphism helpers */
 .glass-panel {
-  background: rgb(var(--c-surface-2) / 0.8);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgb(var(--c-line) / 0.15);
+  background: rgb(var(--c-surface-2) / 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgb(var(--c-line) / 0.35);
 }
 
 .glass-card {
-  background: rgb(var(--c-surface) / 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgb(var(--c-line) / 0.12);
+  background: rgb(var(--c-surface) / 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgb(var(--c-line) / 0.25);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+}
+
+.dark .glass-panel {
+  background: rgb(var(--c-surface-2) / 0.8);
+  border: 1px solid rgb(var(--c-line) / 0.4);
+}
+
+.dark .glass-card {
+  background: rgb(var(--c-surface) / 0.8);
+  border: 1px solid rgb(var(--c-line) / 0.3);
+  box-shadow: none;
 }
 
 .touch-target {

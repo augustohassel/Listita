@@ -43,6 +43,8 @@ export default function App() {
   const selected = lists?.find((list) => list.id === selectedId) ?? lists?.[0]
   const selectedItems = (allItems ?? []).filter((item) => item.listId === selected?.id)
   const selectedRankings = (allRankings ?? []).filter((ranking) => ranking.listId === selected?.id)
+  const headerSubtitle =
+    (currentTab === 'items' || currentTab === 'rankings') && selected ? selected.name : undefined
 
   function showToast(message: string) {
     setToast(message)
@@ -125,23 +127,23 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-base text-ink flex flex-col">
-      <Header subtitle={selected?.name} />
+      <Header subtitle={headerSubtitle} />
 
       <main className="flex-1 w-full max-w-lg mx-auto px-4 pt-4 pb-28 space-y-4">
         {error && (
           <div
             role="alert"
-            className="rounded-2xl bg-red-500/15 border border-red-500/40 px-4 py-3 text-xs font-semibold text-red-200 flex items-center justify-between gap-3 shadow-lg"
+            className="rounded-2xl bg-red-500/10 dark:bg-red-500/15 border border-red-500/30 dark:border-red-500/40 px-4 py-3 text-xs font-semibold text-red-700 dark:text-red-200 flex items-center justify-between gap-3 shadow-lg"
           >
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
               <span>{error}</span>
             </div>
             <button
               type="button"
               onClick={() => setError('')}
               aria-label="Cerrar alerta de error"
-              className="p-1 rounded-lg hover:bg-red-500/20 text-red-300"
+              className="p-1 rounded-lg hover:bg-red-500/20 text-red-600 dark:text-red-300"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -393,8 +395,8 @@ export default function App() {
           role="status"
           className="fixed bottom-20 left-4 right-4 z-40 max-w-md mx-auto glass-panel rounded-2xl border border-emerald-500/35 px-4 py-3 shadow-2xl flex items-center justify-between gap-3"
         >
-          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-300">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>{toast}</span>
           </div>
           <button

@@ -1,16 +1,32 @@
-import { useRef, useState, type ChangeEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
   Database,
   Download,
   HardDrive,
+  Monitor,
+  Moon,
   ShieldCheck,
   Sparkles,
+  Sun,
   Trash2,
   Upload,
 } from 'lucide-react'
 import { clearAllDatabase, db, exportBackup, importBackup, loadDemoData } from '../db'
 import type { RunAction } from '../types'
+
+type ThemePreference = 'system' | 'light' | 'dark'
+
+function applyTheme(theme: ThemePreference) {
+  if (typeof window === 'undefined') return
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+  const isDark = theme === 'dark' || (theme === 'system' && prefersDark)
+  if (isDark) {
+    document.documentElement.classList.add('dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+  }
+}
 
 interface Props {
   run: RunAction
@@ -25,6 +41,41 @@ export function SettingsView({ run, onToast, onDataLoaded }: Props) {
   const rankingsCount = useLiveQuery(() => db.rankings.count(), []) ?? 0
   const [confirmClear, setConfirmClear] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const [theme, setTheme] = useState<ThemePreference>(() => {
+    if (typeof localStorage !== 'undefined') {
+      const stored = localStorage.getItem('listita_theme')
+      if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
+    }
+    return 'system'
+  })
+
+  useEffect(() => {
+    if (theme !== 'system' || typeof window === 'undefined') return
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const listener = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    }
+    media.addEventListener('change', listener)
+    return () => media.removeEventListener('change', listener)
+  }, [theme])
+
+  function handleThemeChange(newTheme: ThemePreference) {
+    setTheme(newTheme)
+    try {
+      localStorage.setItem('listita_theme', newTheme)
+    } catch {
+      // Storage unavailable or disabled
+    }
+    applyTheme(newTheme)
+    onToast(
+      `Tema ${newTheme === 'system' ? 'del sistema' : newTheme === 'light' ? 'claro' : 'oscuro'} aplicado.`,
+    )
+  }
 
   async function handleExport() {
     await run(async () => {
@@ -103,9 +154,47 @@ export function SettingsView({ run, onToast, onDataLoaded }: Props) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3.5 py-2.5">
+        <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3.5 py-2.5">
           <ShieldCheck className="w-4 h-4 shrink-0" />
           <span>Zero-Backend: sin cuentas, sin servidores externos ni telemetría.</span>
+        </div>
+      </div>
+
+      <div className="glass-card rounded-2xl p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <Sun className="w-4 h-4 text-accent" />
+          <h3 className="text-sm font-bold text-ink">Apariencia</h3>
+        </div>
+        <p className="text-xs text-ink-muted leading-relaxed">
+          Elegí si preferís un tema claro, oscuro o sincronizado con tu dispositivo.
+        </p>
+
+        <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-surface/80 border border-line/30">
+          {(
+            [
+              { id: 'system', label: 'Sistema', icon: Monitor },
+              { id: 'light', label: 'Claro', icon: Sun },
+              { id: 'dark', label: 'Oscuro', icon: Moon },
+            ] as const
+          ).map((opt) => {
+            const Icon = opt.icon
+            const active = theme === opt.id
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => handleThemeChange(opt.id)}
+                className={`touch-target flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold transition-all ${
+                  active
+                    ? 'bg-accent text-on-accent shadow-sm'
+                    : 'text-ink-muted hover:text-ink'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{opt.label}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -168,8 +257,8 @@ export function SettingsView({ run, onToast, onDataLoaded }: Props) {
 
       <div className="glass-card rounded-2xl p-5 space-y-3 border border-red-500/20">
         <div className="flex items-center gap-2">
-          <Trash2 className="w-4 h-4 text-red-400" />
-          <h3 className="text-sm font-bold text-red-300">Zona de Peligro</h3>
+          <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+          <h3 className="text-sm font-bold text-red-700 dark:text-red-300">Zona de Peligro</h3>
         </div>
         <p className="text-xs text-ink-muted leading-relaxed">
           Elimina de forma permanente todos los listados, elementos y rankings almacenados en este
@@ -197,7 +286,7 @@ export function SettingsView({ run, onToast, onDataLoaded }: Props) {
           <button
             type="button"
             onClick={() => setConfirmClear(true)}
-            className="touch-target w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/25 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
+            className="touch-target w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-300 border border-red-500/25 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
           >
             <Trash2 className="w-4 h-4" />
             <span>Borrar todos los datos</span>

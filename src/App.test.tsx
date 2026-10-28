@@ -131,3 +131,40 @@ it('permite cargar datos demo, rechaza backups corruptos en Ajustes sin alterar 
   fireEvent.click(screen.getByRole('button', { name: 'Confirmar borrado total' }))
   await waitFor(async () => expect(await db.lists.count()).toBe(0))
 })
+
+it('gestiona el subtítulo contextual en el Header y permite alternar la apariencia (claro/oscuro)', async () => {
+  render(<App />)
+  const nav = await screen.findByRole('navigation', { name: 'Navegación principal' })
+
+  // Cargar datos demo
+  fireEvent.click(within(nav).getByRole('button', { name: /Ajustes/i }))
+  fireEvent.click(screen.getByRole('button', { name: /Cargar datos de demostración/i }))
+  await waitFor(async () => expect(await db.lists.count()).toBeGreaterThan(0))
+
+  // En Ajustes el Header NO muestra subtítulo del primer listado
+  const header = screen.getByRole('banner')
+  expect(within(header).queryByText(/·/)).not.toBeInTheDocument()
+
+  // En Mis listados tampoco muestra subtítulo de un listado
+  fireEvent.click(within(nav).getByRole('button', { name: /Listados/i }))
+  expect(within(header).queryByText(/·/)).not.toBeInTheDocument()
+
+  // En Elementos SÍ muestra el subtítulo del listado seleccionado
+  fireEvent.click(within(nav).getByRole('button', { name: /Elementos/i }))
+  await waitFor(() => expect(within(header).getByText(/·/)).toBeInTheDocument())
+
+  // Selector de apariencia en Ajustes
+  fireEvent.click(within(nav).getByRole('button', { name: /Ajustes/i }))
+  fireEvent.click(screen.getByRole('button', { name: 'Oscuro' }))
+  expect(document.documentElement.classList.contains('dark')).toBe(true)
+  expect(localStorage.getItem('listita_theme')).toBe('dark')
+
+  fireEvent.click(screen.getByRole('button', { name: 'Claro' }))
+  expect(document.documentElement.classList.contains('dark')).toBe(false)
+  expect(localStorage.getItem('listita_theme')).toBe('light')
+
+  // Limpiar para siguientes tests
+  fireEvent.click(screen.getByRole('button', { name: /Borrar todos los datos/i }))
+  fireEvent.click(screen.getByRole('button', { name: 'Confirmar borrado total' }))
+  await waitFor(async () => expect(await db.lists.count()).toBe(0))
+})
