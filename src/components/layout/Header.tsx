@@ -1,5 +1,6 @@
 import { Layers, Moon, ShieldCheck, Sun } from "lucide-react";
 import type { ThemeMode } from "../../types";
+import { APP_VERSION } from "../../version";
 
 interface HeaderProps {
   title?: string;
@@ -14,8 +15,6 @@ export function Header({
   theme = "dark",
   onToggleTheme,
 }: HeaderProps) {
-  const version =
-    typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.2.0";
   const isDark = theme === "dark";
 
   return (
@@ -64,9 +63,9 @@ export function Header({
 
           <span
             className="text-[11px] font-mono font-medium text-ink-muted bg-surface/80 px-2.5 py-0.5 rounded-full border border-line/20 shadow-sm"
-            title={`Versión instalada: v${version}`}
+            title={`Versión instalada: v${APP_VERSION}`}
           >
-            v{version}
+            v{APP_VERSION}
           </span>
         </div>
       </div>
