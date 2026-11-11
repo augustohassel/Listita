@@ -20,6 +20,7 @@ import {
 } from "../db";
 import { applyThemeToDom, readStoredTheme, writeStoredTheme } from "../hooks/useTheme";
 import type { RunAction, ThemeMode } from "../types";
+import { APP_VERSION } from "../version";
 
 interface Props {
   run: RunAction;
@@ -36,8 +37,6 @@ export function SettingsView({
   theme,
   onSelectTheme,
 }: Props) {
-  const version =
-    typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.2.0";
   const listsCount = useLiveQuery(() => db.lists.count(), []) ?? 0;
   const itemsCount = useLiveQuery(() => db.items.count(), []) ?? 0;
   const rankingsCount = useLiveQuery(() => db.rankings.count(), []) ?? 0;
@@ -301,7 +300,7 @@ export function SettingsView({
       <div className="pt-2 pb-6 text-center">
         <p className="text-[11px] font-mono text-ink-muted/70">
           Listita{" "}
-          <span className="text-ink-muted font-semibold">v{version}</span> • PWA
+          <span className="text-ink-muted font-semibold">v{APP_VERSION}</span> • PWA
           Local
         </p>
       </div>
