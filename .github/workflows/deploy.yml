@@ -21,6 +21,8 @@ jobs:
   build:
     name: Build & Test
     runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.semver.outputs.release_version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,19 +35,18 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - name: Validate SemVer
+      - name: Validate & Resolve SemVer
+        id: semver
         env:
           EVENT_NAME: ${{ github.event_name }}
-          BASE_REF: ${{ github.base_ref }}
           REF_NAME: ${{ github.ref }}
         run: |
-          if [[ "$EVENT_NAME" == "pull_request" && "$BASE_REF" == "master" ]]; then
-            node scripts/check-version.mjs --require-bump
-          elif [[ "$EVENT_NAME" != "pull_request" && "$REF_NAME" == "refs/heads/master" ]]; then
-            node scripts/check-version.mjs --require-bump --allow-same-commit
+          if [[ "$EVENT_NAME" != "pull_request" && "$REF_NAME" == "refs/heads/master" ]]; then
+            node scripts/check-version.mjs --require-bump --allow-same-commit --auto-bump
           else
             node scripts/check-version.mjs
           fi
+          echo "release_version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
       - name: Install dependencies
         run: npm ci
@@ -102,13 +103,18 @@ jobs:
       - name: Crear tag y release SemVer
         env:
           GH_TOKEN: ${{ github.token }}
+          BUILD_RELEASE_VERSION: ${{ needs.build.outputs.release_version }}
         run: |
           set -euo pipefail
           servidor="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
 
-          # Validar SemVer estricto y verificar si el tag ya apunta a este commit
-          node scripts/check-version.mjs --require-bump --allow-same-commit
-          version=$(node -p "require('./package.json').version")
+          # Usar la versión resuelta en build (o resolverla con auto-bump si falta)
+          if [[ -n "$BUILD_RELEASE_VERSION" ]]; then
+            version="$BUILD_RELEASE_VERSION"
+          else
+            node scripts/check-version.mjs --require-bump --allow-same-commit --auto-bump
+            version=$(node -p "require('./package.json').version")
+          fi
           tag="v$version"
 
           existing_commit=$(git rev-parse -q --verify "refs/tags/$tag^{commit}" || true)
