@@ -46,7 +46,7 @@ describe('check-version SemVer', () => {
         tags,
         requireBump: true,
       }),
-    ).toEqual({ ok: true, tag: 'v0.2.1', version: '0.2.1', alreadyReleased: false })
+    ).toEqual({ ok: true, tag: 'v0.2.1', version: '0.2.1', alreadyReleased: false, autoBumped: false })
 
     expect(
       validateReleaseVersion({
@@ -56,7 +56,7 @@ describe('check-version SemVer', () => {
         tags,
         requireBump: true,
       }),
-    ).toEqual({ ok: true, tag: 'v0.3.0', version: '0.3.0', alreadyReleased: false })
+    ).toEqual({ ok: true, tag: 'v0.3.0', version: '0.3.0', alreadyReleased: false, autoBumped: false })
 
     expect(
       validateReleaseVersion({
@@ -66,7 +66,7 @@ describe('check-version SemVer', () => {
         tags,
         requireBump: true,
       }),
-    ).toEqual({ ok: true, tag: 'v1.0.0', version: '1.0.0', alreadyReleased: false })
+    ).toEqual({ ok: true, tag: 'v1.0.0', version: '1.0.0', alreadyReleased: false, autoBumped: false })
   })
 
   it('falla cuando se olvida bumpear o la versión retrocede en master/PR', () => {
@@ -105,7 +105,47 @@ describe('check-version SemVer', () => {
       requireBump: true,
       allowSameCommit: true,
     })
-    expect(res).toEqual({ ok: true, tag: 'v0.2.0', version: '0.2.0', alreadyReleased: true })
+    expect(res).toEqual({ ok: true, tag: 'v0.2.0', version: '0.2.0', alreadyReleased: true, autoBumped: false })
+  })
+
+  it('auto-incrementa patch sobre el mayor tag cuando autoBump está activo y no hubo bump manual', () => {
+    const repeated = validateReleaseVersion({
+      pkgVersion: '0.2.0',
+      lockVersion: '0.2.0',
+      lockRootVersion: '0.2.0',
+      tags: ['v0.1.0', 'v0.2.0'],
+      targetTagCommit: 'abc123',
+      headCommit: 'def456',
+      requireBump: true,
+      allowSameCommit: true,
+      autoBump: true,
+    })
+    expect(repeated).toEqual({ ok: true, tag: 'v0.2.1', version: '0.2.1', alreadyReleased: false, autoBumped: true })
+
+    const behind = validateReleaseVersion({
+      pkgVersion: '0.1.5',
+      lockVersion: '0.1.5',
+      lockRootVersion: '0.1.5',
+      tags: ['v0.1.0', 'v0.2.3'],
+      requireBump: true,
+      autoBump: true,
+    })
+    expect(behind).toEqual({ ok: true, tag: 'v0.2.4', version: '0.2.4', alreadyReleased: false, autoBumped: true })
+  })
+
+  it('detecta re-ejecución idempotente cuando el commit ya tiene un tag auto-bumpeado en tagsAtHead', () => {
+    const res = validateReleaseVersion({
+      pkgVersion: '0.2.0',
+      lockVersion: '0.2.0',
+      lockRootVersion: '0.2.0',
+      tags: ['v0.1.0', 'v0.2.0', 'v0.2.1'],
+      tagsAtHead: ['v0.2.1'],
+      headCommit: 'def456',
+      requireBump: true,
+      allowSameCommit: true,
+      autoBump: true,
+    })
+    expect(res).toEqual({ ok: true, tag: 'v0.2.1', version: '0.2.1', alreadyReleased: true, autoBumped: false })
   })
 
   it('rechaza tag existente en PR aunque apunte al mismo commit cuando allowSameCommit es false', () => {
