@@ -25,9 +25,19 @@ Este documento registra las entidades y conceptos funcionales de **Listita** par
 - **Lo que NO es**: No es un ranking calculado por puntaje, fórmula o promedio ponderado.
 
 ### Copia de Seguridad (`BackupData`)
-- **Definición**: Archivo JSON estructurado y versionado que contiene la totalidad de las colecciones locales (`lists`, `items` y `rankings`) junto con la fecha de exportación (`exportedAt`).
-- **Alcance / Propósito**: Permite resguardar los datos locales fuera del navegador y restaurarlos de manera atómica (`db.transaction`) tras validar esquema e integridad referencial (pertenencia de elementos y rankings a sus listados).
-- **Lo que NO es**: No es un servicio de sincronización automática en la nube ni reemplaza validaciones de integridad al importar.
+- **Definición**: Archivo JSON estructurado y versionado (v2) que contiene la totalidad de las colecciones locales (`lists`, `items`, `rankings` y `tombstones`) junto con la fecha de exportación (`exportedAt`).
+- **Alcance / Propósito**: Permite resguardar los datos locales fuera del navegador, restaurarlos de manera atómica (`db.transaction`) manteniendo retrocompatibilidad con respaldos v1 y servir como formato de intercambio para la sincronización en Google Drive (`Listita/listita-backup.json`).
+- **Lo que NO es**: No reemplaza las validaciones de integridad referencial ni expone credenciales.
+
+### Sincronización en Nube Personal (Google Drive)
+- **Definición**: Mecanismo opcional cliente-a-cliente (Zero-Backend) que sincroniza el snapshot local de `ListitaDB` contra `Listita/listita-backup.json` en el Google Drive personal del usuario mediante Google Identity Services (`drive.file`) y resolución determinística Last-Write-Wins (LWW).
+- **Alcance / Propósito**: Mantener consistentes listados, elementos y rankings entre múltiples dispositivos sin servidores propios ni cuentas centrales.
+- **Lo que NO es**: No es un backend propio ni un bloqueo para operar 100% offline sobre `IndexedDB`.
+
+### Tombstone (Lápida de Eliminación)
+- **Definición**: Registro liviano (`id` = `syncId`, `entityType`, `deletedAt`) almacenado en `ListitaDB` cada vez que se elimina un listado, elemento o ranking.
+- **Alcance / Propósito**: Propagar eliminaciones entre dispositivos durante el merge LWW evitando que registros borrados resuciten al sincronizar con otro dispositivo desactualizado.
+- **Lo que NO es**: No almacena el contenido previo de la entidad eliminada ni bloquea una creación posterior con un nuevo `syncId`.
 
 ### Dataset de Demostración (`DemoData`)
 - **Definición**: Conjunto curado de listados de ejemplo (como vinos tintos y cafés de especialidad) con atributos personalizados, elementos con notas y rankings prearmados.

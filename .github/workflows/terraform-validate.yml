@@ -1,0 +1,84 @@
+name: Terraform Validate & Apply
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+    paths:
+      - 'infra/**'
+      - '.github/workflows/terraform-validate.yml'
+  pull_request:
+    branches:
+      - master
+      - dev
+    paths:
+      - 'infra/**'
+      - '.github/workflows/terraform-validate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    name: Terraform Fmt & Validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.8'
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init (sin backend)
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        run: terraform validate
+
+  plan-and-apply:
+    name: Terraform Plan / Apply (OIDC)
+    needs: validate
+    runs-on: ubuntu-latest
+    if: >-
+      vars.GCP_PROJECT_ID != '' &&
+      vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' &&
+      vars.GCP_SERVICE_ACCOUNT != '' &&
+      vars.TF_STATE_BUCKET != ''
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (OIDC)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.8'
+
+      - name: Terraform Init
+        run: terraform init -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}"
+
+      - name: Terraform Plan
+        run: terraform plan -no-color -var="project_id=${{ vars.GCP_PROJECT_ID }}"
+
+      - name: Terraform Apply (solo push a master)
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+        run: terraform apply -auto-approve -no-color -var="project_id=${{ vars.GCP_PROJECT_ID }}"

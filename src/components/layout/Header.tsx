@@ -37,7 +37,7 @@ export function Header({
             </div>
             <div className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
               <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-              <span>100% Local y Privado</span>
+              <span>Local-First y Privado</span>
             </div>
           </div>
         </div>

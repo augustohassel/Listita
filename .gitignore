@@ -24,3 +24,10 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
