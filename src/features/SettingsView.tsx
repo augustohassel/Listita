@@ -1,10 +1,13 @@
-import { useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
+  Cloud,
+  CloudOff,
   Database,
   Download,
   HardDrive,
   Moon,
+  RefreshCw,
   ShieldCheck,
   Sparkles,
   Sun,
@@ -19,6 +22,8 @@ import {
   loadDemoData,
 } from "../db";
 import { applyThemeToDom, readStoredTheme, writeStoredTheme } from "../hooks/useTheme";
+import { syncService } from "../services/cloudSync/syncService";
+import type { SyncState } from "../services/cloudSync/types";
 import type { RunAction, ThemeMode } from "../types";
 import { APP_VERSION } from "../version";
 
@@ -44,8 +49,42 @@ export function SettingsView({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [internalTheme, setInternalTheme] = useState<ThemeMode>(() => readStoredTheme());
+  const [syncState, setSyncState] = useState<SyncState>(() => syncService.getState());
+  const [showClientIdInput, setShowClientIdInput] = useState(false);
+  const [clientIdDraft, setClientIdDraft] = useState(() => syncService.getState().clientIdOverride);
+
+  useEffect(() => syncService.subscribe(setSyncState), []);
 
   const currentTheme = theme ?? internalTheme;
+
+  async function handleConnectDrive() {
+    const ok = await syncService.connectAndSync();
+    if (ok) {
+      onToast("Google Drive conectado y sincronizado.");
+    }
+  }
+
+  async function handleSyncNow() {
+    const ok = await syncService.syncNow({ interactive: true });
+    if (ok) {
+      onToast("Sincronización con Google Drive completada.");
+    }
+  }
+
+  async function handleDisconnectDrive() {
+    await syncService.disconnect();
+    onToast("Google Drive desconectado.");
+  }
+
+  function handleSaveClientId() {
+    syncService.setClientIdOverride(clientIdDraft);
+    setShowClientIdInput(false);
+    onToast(
+      clientIdDraft.trim()
+        ? "Client ID de Google guardado localmente."
+        : "Override de Client ID eliminado.",
+    );
+  }
 
   function handleThemeChange(newTheme: ThemeMode) {
     if (onSelectTheme) {
@@ -152,8 +191,143 @@ export function SettingsView({
         <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3.5 py-2.5">
           <ShieldCheck className="w-4 h-4 shrink-0" />
           <span>
-            Zero-Backend: sin cuentas, sin servidores externos ni telemetría.
+            Zero-Backend y Local-First: tus datos viven en este dispositivo, con
+            sincronización opcional directa hacia tu Google Drive personal.
           </span>
+        </div>
+      </div>
+
+      <div className="glass-card rounded-2xl p-5 space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            {syncState.connected ? (
+              <Cloud className="w-4 h-4 text-accent" />
+            ) : (
+              <CloudOff className="w-4 h-4 text-ink-muted" />
+            )}
+            <h3 className="text-sm font-bold text-ink">
+              Sincronización con Google Drive
+            </h3>
+          </div>
+          {syncState.connected && (
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/25">
+              {syncState.status === "syncing"
+                ? "Sincronizando..."
+                : syncState.status === "token_expired"
+                  ? "Sesión expirada"
+                  : syncState.status === "offline"
+                    ? "Sin conexión"
+                    : "Conectado"}
+            </span>
+          )}
+        </div>
+
+        <p className="text-xs text-ink-muted leading-relaxed">
+          Respaldá y sincronizá tus listados entre dispositivos en{" "}
+          <code className="text-[11px] font-mono text-ink">
+            Listita/listita-backup.json
+          </code>{" "}
+          usando tu propia cuenta de Google Drive (acceso restringido al archivo
+          de la app).
+        </p>
+
+        {syncState.lastSyncedAt && (
+          <p className="text-[11px] text-ink-muted">
+            Última sincronización:{" "}
+            <span className="font-medium text-ink">
+              {new Date(syncState.lastSyncedAt).toLocaleString("es-AR")}
+            </span>
+          </p>
+        )}
+
+        {syncState.lastError && (
+          <div
+            role="status"
+            className="text-xs rounded-xl px-3 py-2 bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-300"
+          >
+            {syncState.lastError}
+          </div>
+        )}
+
+        {syncState.status === "not_configured" && !syncState.lastError && (
+          <div className="text-xs rounded-xl px-3 py-2 bg-surface/80 border border-line/25 text-ink-muted">
+            No hay un{" "}
+            <code className="font-mono text-[11px]">VITE_GOOGLE_CLIENT_ID</code>{" "}
+            configurado en el build. Podés ingresar un OAuth Client ID propio
+            abajo.
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2 pt-1">
+          {!syncState.connected ? (
+            <button
+              type="button"
+              disabled={syncState.status === "syncing" || syncState.status === "not_configured"}
+              onClick={() => void handleConnectDrive()}
+              className="touch-target flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-accent hover:bg-accent/90 disabled:opacity-50 text-on-accent text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <Cloud className="w-4 h-4" />
+              <span>Conectar Google Drive</span>
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                disabled={syncState.status === "syncing"}
+                onClick={() => void handleSyncNow()}
+                className="touch-target flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-accent hover:bg-accent/90 disabled:opacity-50 text-on-accent text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                <RefreshCw
+                  className={`w-4 h-4 ${syncState.status === "syncing" ? "animate-spin" : ""}`}
+                />
+                <span>
+                  {syncState.status === "token_expired"
+                    ? "Reconectar"
+                    : "Sincronizar ahora"}
+                </span>
+              </button>
+              <button
+                type="button"
+                disabled={syncState.status === "syncing"}
+                onClick={() => void handleDisconnectDrive()}
+                className="touch-target px-4 py-3 rounded-xl bg-surface/90 hover:bg-surface text-ink-muted hover:text-ink border border-line/25 text-xs font-semibold transition-colors"
+              >
+                Desconectar
+              </button>
+            </>
+          )}
+        </div>
+
+        <div className="pt-1">
+          <button
+            type="button"
+            onClick={() => setShowClientIdInput((prev) => !prev)}
+            className="text-[11px] text-ink-muted hover:text-accent underline underline-offset-2"
+          >
+            {showClientIdInput
+              ? "Ocultar configuración de Client ID"
+              : "Configurar Google OAuth Client ID"}
+          </button>
+
+          {showClientIdInput && (
+            <div className="mt-2.5 flex gap-2">
+              <input
+                type="text"
+                value={clientIdDraft}
+                onChange={(e) => setClientIdDraft(e.target.value)}
+                placeholder="1234567890-xxx.apps.googleusercontent.com"
+                aria-label="Google OAuth Client ID"
+                className="flex-1 min-w-0 rounded-xl bg-surface border border-line/30 px-3 py-2 text-xs text-ink placeholder:text-ink-muted/60 focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+              <button
+                type="button"
+                onClick={handleSaveClientId}
+                className="px-3 py-2 rounded-xl bg-surface/90 hover:bg-surface border border-line/30 text-xs font-semibold text-ink"
+              >
+                Guardar
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -297,11 +471,21 @@ export function SettingsView({
         )}
       </div>
 
-      <div className="pt-2 pb-6 text-center">
+      <div className="pt-2 pb-6 text-center space-y-1.5">
         <p className="text-[11px] font-mono text-ink-muted/70">
           Listita{" "}
           <span className="text-ink-muted font-semibold">v{APP_VERSION}</span> • PWA
-          Local
+          Local-First
+        </p>
+        <p className="text-[11px] text-ink-muted/80">
+          <a
+            href={`${import.meta.env.BASE_URL}privacy.html`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-ink transition-colors"
+          >
+            Política de Privacidad
+          </a>
         </p>
       </div>
     </section>

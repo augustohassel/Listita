@@ -1,0 +1,4 @@
+project_id         = "tu-proyecto-gcp"
+region             = "us-central1"
+enable_github_oidc = false
+github_repository  = "augustohassel/Listita"

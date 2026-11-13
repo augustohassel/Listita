@@ -21,7 +21,8 @@ export default defineConfig({
         id: '/',
         name: 'Listita - Listados y Rankings Personales',
         short_name: 'Listita',
-        description: 'Listados personalizados, notas y rankings manuales con privacidad 100% local.',
+        description:
+          'Listados personalizados, notas y rankings manuales Local-First con sincronización opcional en tu Google Drive.',
         theme_color: '#F2F2F7',
         background_color: '#F2F2F7',
         display: 'standalone',
@@ -34,6 +35,18 @@ export default defineConfig({
             sizes: 'any',
             type: 'image/svg+xml',
             purpose: 'any maskable',
+          },
+        ],
+      },
+      workbox: {
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/accounts\.google\.com\/.*/i,
+            handler: 'NetworkOnly',
+          },
+          {
+            urlPattern: /^https:\/\/(?:www\.)?googleapis\.com\/.*/i,
+            handler: 'NetworkOnly',
           },
         ],
       },

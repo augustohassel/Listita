@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent, type SubmitEvent } from "react";
+import { useEffect, useState, type KeyboardEvent, type SubmitEvent } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   AlertTriangle,
@@ -20,10 +20,12 @@ import { ListDetail } from "./features/ListDetail";
 import { Rankings } from "./features/Rankings";
 import { SettingsView } from "./features/SettingsView";
 import { useTheme } from "./hooks/useTheme";
+import { syncService } from "./services/cloudSync/syncService";
 import type { NavTab, RunAction } from "./types";
 
 export default function App() {
   const { theme, setTheme, toggleTheme } = useTheme();
+  useEffect(() => syncService.startAutoSync(), []);
   const lists = useLiveQuery(() => db.lists.toArray());
   const allItems = useLiveQuery(() => db.items.toArray());
   const allRankings = useLiveQuery(() => db.rankings.toArray());
