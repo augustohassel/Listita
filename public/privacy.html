@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <title>Política de Privacidad — Listita</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at top, #1e1b4b 0%, #020617 55%);
+        color: #e2e8f0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+        line-height: 1.65;
+        padding: 2rem 1rem 4rem;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 16px;
+        padding: 2rem 1.75rem;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+        padding-bottom: 1.25rem;
+        margin-bottom: 1.5rem;
+      }
+      h1 {
+        margin: 0;
+        font-size: 1.6rem;
+        color: #f8fafc;
+        letter-spacing: -0.02em;
+      }
+      .subtitle {
+        margin: 0.25rem 0 0;
+        font-size: 0.9rem;
+        color: #94a3b8;
+      }
+      h2 {
+        margin: 1.75rem 0 0.5rem;
+        font-size: 1.1rem;
+        color: #a5b4fc;
+      }
+      p,
+      li {
+        color: #cbd5e1;
+        font-size: 0.96rem;
+      }
+      ul {
+        padding-left: 1.25rem;
+        margin: 0.5rem 0 1rem;
+      }
+      code {
+        background: rgba(99, 102, 241, 0.15);
+        color: #c7d2fe;
+        padding: 0.15rem 0.4rem;
+        border-radius: 6px;
+        font-size: 0.88em;
+      }
+      a {
+        color: #818cf8;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .back-btn {
+        display: inline-block;
+        padding: 0.5rem 0.9rem;
+        border-radius: 10px;
+        background: rgba(99, 102, 241, 0.18);
+        border: 1px solid rgba(129, 140, 248, 0.35);
+        color: #e0e7ff;
+        font-size: 0.88rem;
+        font-weight: 600;
+      }
+      .back-btn:hover {
+        background: rgba(99, 102, 241, 0.28);
+        text-decoration: none;
+      }
+      footer {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.14);
+        font-size: 0.85rem;
+        color: #94a3b8;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>Política de Privacidad — Listita</h1>
+          <p class="subtitle">Arquitectura Local-First &amp; Zero-Backend · Última actualización: noviembre de 2026</p>
+        </div>
+        <a class="back-btn" href="./">Volver a Listita</a>
+      </header>
+
+      <section>
+        <h2>1. Almacenamiento 100% local (Zero-Backend)</h2>
+        <p>
+          <strong>Listita</strong> funciona íntegramente en tu navegador. Tus listados, elementos, notas,
+          rankings y preferencias se almacenan exclusivamente en el almacenamiento local de tu dispositivo
+          (<code>IndexedDB</code> y <code>localStorage</code>).
+        </p>
+        <p>
+          El desarrollador no opera servidores propios, bases de datos centrales ni herramientas de analítica,
+          seguimiento o telemetría de terceros.
+        </p>
+      </section>
+
+      <section>
+        <h2>2. Sincronización opcional con Google Drive</h2>
+        <p>
+          Si decidís vincular tu cuenta de Google desde <strong>Ajustes</strong>, la aplicación utiliza
+          autenticación OAuth directamente en tu navegador (Google Identity Services) y solicita únicamente el
+          alcance acotado <code>https://www.googleapis.com/auth/drive.file</code>.
+        </p>
+        <ul>
+          <li>
+            Este permiso habilita únicamente a crear, leer y actualizar la carpeta y el archivo de respaldo
+            propios de la app (<code>Listita/listita-backup.json</code>) dentro de tu Google Drive personal.
+          </li>
+          <li>
+            Listita <strong>no</strong> accede ni lista el resto de los archivos de tu cuenta de Google Drive.
+          </li>
+          <li>
+            La transferencia ocurre directamente entre tu navegador y las APIs de Google, sin servidores
+            intermediarios del desarrollador.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>3. Control y eliminación de tus datos</h2>
+        <p>
+          Podés revocar el acceso de Google Drive en cualquier momento desde <strong>Ajustes</strong> en la app
+          o desde los permisos de tu cuenta de Google, eliminar el archivo
+          <code>Listita/listita-backup.json</code> en tu Drive, y exportar o borrar todos tus datos locales
+          cuando lo desees.
+        </p>
+      </section>
+
+      <footer>
+        Código fuente y contacto del proyecto en
+        <a href="https://github.com/augustohassel/Listita" target="_blank" rel="noopener noreferrer">
+          github.com/augustohassel/Listita
+        </a>.
+      </footer>
+    </main>
+  </body>
+</html>

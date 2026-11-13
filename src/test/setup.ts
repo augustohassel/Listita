@@ -5,7 +5,7 @@ import { afterEach, beforeEach } from 'vitest'
 import { db } from '../db'
 
 beforeEach(async () => {
-  await db.transaction('rw', db.lists, db.items, db.rankings, async () => {
+  await db.transaction('rw', db.tables, async () => {
     await Promise.all(db.tables.map((table) => table.clear()))
   })
 })

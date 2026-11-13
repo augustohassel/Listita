@@ -219,5 +219,58 @@ describe('backups JSON, datos de demostración y vaciado transaccional', () => {
     expect(await db.lists.count()).toBe(0)
     expect(await db.items.count()).toBe(0)
     expect(await db.rankings.count()).toBe(0)
+    expect(await db.tombstones.count()).toBe(0)
+  })
+
+  it('asigna syncId, updatedAt y registra tombstones en eliminaciones y backups v2/v1', async () => {
+    const listId = await createList('Vinos', 'Tintos', ['Bodega'])
+    const list = await db.lists.get(listId)
+    expect(list?.syncId).toBeTruthy()
+    expect(typeof list?.updatedAt).toBe('number')
+
+    const itemA = await saveItem(listId, wine)
+    const itemB = await saveItem(listId, { ...wine, name: 'Syrah' })
+    const rankingId = await createRanking(listId, 'Top')
+    const itemAData = await db.items.get(itemA)
+    const rankingData = await db.rankings.get(rankingId)
+    expect(itemAData?.syncId).toBeTruthy()
+    expect(rankingData?.syncId).toBeTruthy()
+
+    await deleteItem(itemA)
+    const itemTombstone = await db.tombstones.get(itemAData!.syncId!)
+    expect(itemTombstone).toMatchObject({ id: itemAData!.syncId, entityType: 'item' })
+
+    const exportedV2 = JSON.parse(await exportBackup())
+    expect(exportedV2.version).toBe(2)
+    expect(exportedV2.tombstones).toHaveLength(1)
+
+    await deleteList(listId)
+    expect(await db.tombstones.get(list!.syncId!)).toMatchObject({ entityType: 'list' })
+    expect(await db.tombstones.get(rankingData!.syncId!)).toMatchObject({ entityType: 'ranking' })
+
+    // Retrocompatibilidad al importar backup v1 sin syncId/updatedAt/tombstones
+    const v1Payload = JSON.stringify({
+      version: 1,
+      exportedAt: '2026-01-01T00:00:00.000Z',
+      lists: [{ id: 10, name: 'Legacy', category: '', fields: [] }],
+      items: [{ id: 20, listId: 10, name: 'Item V1', notes: '', attributes: {} }],
+      rankings: [{ id: 30, listId: 10, name: 'Rank V1', itemIds: [20] }],
+    })
+    const importedV1 = await importBackup(v1Payload)
+    expect(importedV1.lists[0]?.syncId).toBeTruthy()
+    expect(typeof importedV1.items[0]?.updatedAt).toBe('number')
+    expect(importedV1.tombstones).toEqual([])
+    expect(await db.tombstones.count()).toBe(0)
+    expect(itemB).toBeGreaterThan(0)
+  })
+
+  it('marca los datos de demostración como semilla con updatedAt <= 1', async () => {
+    await loadDemoData()
+    const lists = await db.lists.toArray()
+    const items = await db.items.toArray()
+    const rankings = await db.rankings.toArray()
+    expect(lists.every((l) => l.updatedAt === 1 && Boolean(l.syncId))).toBe(true)
+    expect(items.every((i) => i.updatedAt === 1 && Boolean(i.syncId))).toBe(true)
+    expect(rankings.every((r) => r.updatedAt === 1 && Boolean(r.syncId))).toBe(true)
   })
 })

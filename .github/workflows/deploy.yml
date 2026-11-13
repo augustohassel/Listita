@@ -62,6 +62,7 @@ jobs:
         env:
           GITHUB_ACTIONS: true
           VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
 
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'

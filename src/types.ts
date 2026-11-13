@@ -1,8 +1,18 @@
+export type SyncEntityType = 'list' | 'item' | 'ranking'
+
+export interface Tombstone {
+  id: string
+  entityType: SyncEntityType
+  deletedAt: number
+}
+
 export interface List {
   id: number
   name: string
   category: string
   fields: string[]
+  syncId?: string
+  updatedAt?: number
 }
 
 export interface Item {
@@ -11,6 +21,8 @@ export interface Item {
   name: string
   notes: string
   attributes: Record<string, string>
+  syncId?: string
+  updatedAt?: number
 }
 
 export interface Ranking {
@@ -18,6 +30,8 @@ export interface Ranking {
   listId: number
   name: string
   itemIds: number[]
+  syncId?: string
+  updatedAt?: number
 }
 
 export interface BackupData {
@@ -26,6 +40,7 @@ export interface BackupData {
   lists: List[]
   items: Item[]
   rankings: Ranking[]
+  tombstones?: Tombstone[]
 }
 
 export type NavTab = 'lists' | 'items' | 'rankings' | 'settings'
