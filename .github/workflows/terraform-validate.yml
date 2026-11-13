@@ -77,8 +77,8 @@ jobs:
         run: terraform init -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}"
 
       - name: Terraform Plan
-        run: terraform plan -no-color -var="project_id=${{ vars.GCP_PROJECT_ID }}"
+        run: terraform plan -no-color -var="project_id=${{ vars.GCP_PROJECT_ID }}" -var="enable_github_oidc=true"
 
       - name: Terraform Apply (solo push a master)
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
-        run: terraform apply -auto-approve -no-color -var="project_id=${{ vars.GCP_PROJECT_ID }}"
+        run: terraform apply -auto-approve -no-color -var="project_id=${{ vars.GCP_PROJECT_ID }}" -var="enable_github_oidc=true"
