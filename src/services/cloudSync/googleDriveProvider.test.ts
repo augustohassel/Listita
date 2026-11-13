@@ -1,12 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createList, db, saveItem } from '../../db'
-import { GoogleDriveProvider } from './googleDriveProvider'
+import {
+  DRIVE_FETCH_TIMEOUT_MS,
+  GoogleDriveProvider,
+  INTERACTIVE_AUTH_TIMEOUT_MS,
+  SILENT_AUTH_TIMEOUT_MS,
+} from './googleDriveProvider'
 import { SyncService } from './syncService'
 import { CloudSyncError, type CloudSyncProvider } from './types'
 
 describe('GoogleDriveProvider', () => {
   beforeEach(() => {
     localStorage.clear()
+    sessionStorage.clear()
     vi.restoreAllMocks()
     Object.defineProperty(navigator, 'onLine', {
       configurable: true,
@@ -16,6 +22,7 @@ describe('GoogleDriveProvider', () => {
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     vi.unstubAllGlobals()
   })
 
@@ -120,6 +127,151 @@ describe('GoogleDriveProvider', () => {
     fetchMock.mockResolvedValueOnce(new Response('Unauthorized', { status: 401 }))
     await expect(provider.readRemoteBackup()).rejects.toMatchObject({ code: 'TOKEN_EXPIRED' })
   })
+
+  it('restaura el token vigente desde sessionStorage tras recargar sin exigir reconexión', async () => {
+    const requestAccessToken = vi.fn()
+    ;(globalThis as { google?: unknown }).google = {
+      accounts: {
+        oauth2: {
+          initTokenClient: ({
+            callback,
+          }: {
+            callback: (res: { access_token?: string; expires_in?: number }) => void
+          }) => ({
+            requestAccessToken: (opts?: { prompt?: string }) => {
+              requestAccessToken(opts)
+              callback({ access_token: 'tok-session', expires_in: 3600 })
+            },
+          }),
+        },
+      },
+    }
+
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ files: [] }), { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const provider1 = new GoogleDriveProvider('client-id')
+    await provider1.connect()
+    expect(requestAccessToken).toHaveBeenCalledTimes(1)
+
+    // Simular recarga de página con nueva instancia del provider y sin llamar a GIS
+    delete (globalThis as { google?: unknown }).google
+    const provider2 = new GoogleDriveProvider('client-id')
+    expect(provider2.isConnected()).toBe(true)
+    await expect(provider2.readRemoteBackup()).resolves.toBeNull()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('intenta renovación silenciosa (prompt: "") cuando está conectado pero falta el token en sessionStorage', async () => {
+    localStorage.setItem('listita.cloudSync.connected', 'true')
+    const requestAccessToken = vi.fn()
+    ;(globalThis as { google?: unknown }).google = {
+      accounts: {
+        oauth2: {
+          initTokenClient: ({
+            callback,
+          }: {
+            callback: (res: { access_token?: string; expires_in?: number }) => void
+          }) => ({
+            requestAccessToken: (opts?: { prompt?: string }) => {
+              requestAccessToken(opts)
+              callback({ access_token: 'tok-silent', expires_in: 3600 })
+            },
+          }),
+        },
+      },
+    }
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ files: [] }), { status: 200 })),
+    )
+
+    const provider = new GoogleDriveProvider('client-id')
+    await expect(provider.readRemoteBackup()).resolves.toBeNull()
+    expect(requestAccessToken).toHaveBeenCalledWith({ prompt: '' })
+  })
+
+  it('sale con TOKEN_EXPIRED si la renovación silenciosa agota el timeout sin callback', async () => {
+    vi.useFakeTimers()
+    localStorage.setItem('listita.cloudSync.connected', 'true')
+    ;(globalThis as { google?: unknown }).google = {
+      accounts: {
+        oauth2: {
+          initTokenClient: () => ({
+            requestAccessToken: () => {
+              // No invoca callback ni error_callback
+            },
+          }),
+        },
+      },
+    }
+
+    const provider = new GoogleDriveProvider('client-id')
+    const promise = provider.readRemoteBackup()
+    const assertion = expect(promise).rejects.toMatchObject({ code: 'TOKEN_EXPIRED' })
+    await vi.advanceTimersByTimeAsync(SILENT_AUTH_TIMEOUT_MS + 10)
+    await assertion
+  })
+
+  it('sale con AUTH_DENIED si el flujo OAuth interactivo agota el timeout sin callback', async () => {
+    vi.useFakeTimers()
+    ;(globalThis as { google?: unknown }).google = {
+      accounts: {
+        oauth2: {
+          initTokenClient: () => ({
+            requestAccessToken: () => {
+              // Popup cerrado o bloqueado sin callback
+            },
+          }),
+        },
+      },
+    }
+
+    const provider = new GoogleDriveProvider('client-id')
+    const promise = provider.connect()
+    const assertion = expect(promise).rejects.toMatchObject({ code: 'AUTH_DENIED' })
+    await vi.advanceTimersByTimeAsync(INTERACTIVE_AUTH_TIMEOUT_MS + 10)
+    await assertion
+    expect(provider.isConnected()).toBe(false)
+  })
+
+  it('aborta driveFetch con NETWORK_ERROR si la red queda colgada más allá del timeout', async () => {
+    vi.useFakeTimers()
+    ;(globalThis as { google?: unknown }).google = {
+      accounts: {
+        oauth2: {
+          initTokenClient: ({
+            callback,
+          }: {
+            callback: (res: { access_token?: string; expires_in?: number }) => void
+          }) => ({
+            requestAccessToken: () => callback({ access_token: 'tok-hang', expires_in: 3600 }),
+          }),
+        },
+      },
+    }
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_input: RequestInfo | URL, init?: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => {
+              reject(new DOMException('The operation was aborted.', 'AbortError'))
+            })
+          }),
+      ),
+    )
+
+    const provider = new GoogleDriveProvider('client-id')
+    await provider.connect()
+
+    const promise = provider.readRemoteBackup()
+    const assertion = expect(promise).rejects.toMatchObject({ code: 'NETWORK_ERROR' })
+    await vi.advanceTimersByTimeAsync(DRIVE_FETCH_TIMEOUT_MS + 10)
+    await assertion
+  })
 })
 
 describe('SyncService', () => {
@@ -169,5 +321,60 @@ describe('SyncService', () => {
     mode = 'expired'
     expect(await service.syncNow()).toBe(false)
     expect(service.getState().status).toBe('token_expired')
+  })
+
+  it('sale de syncing hacia token_expired al cancelar reconexión si ya estaba conectado y preserva datos locales', async () => {
+    const listId = await createList('Mis Vinos', '', [])
+    await saveItem(listId, { name: 'Malbec', notes: '', attributes: {} })
+
+    const mockProvider: CloudSyncProvider = {
+      isConfigured: () => true,
+      isConnected: () => true,
+      getClientIdOverride: () => '',
+      setClientIdOverride: () => {},
+      hasDefaultClientId: () => true,
+      getLastSyncedAt: () => null,
+      setLastSyncedAt: () => {},
+      connect: async () => {
+        throw new CloudSyncError('AUTH_DENIED', 'Popup cerrado por el usuario')
+      },
+      disconnect: async () => {},
+      readRemoteBackup: async () => null,
+      writeRemoteBackup: async () => {},
+    }
+
+    const service = new SyncService(mockProvider)
+    expect(await service.connectAndSync()).toBe(false)
+    expect(service.getState().status).toBe('token_expired')
+    expect(service.getState().pendingChanges).toBe(true)
+    expect(await db.lists.count()).toBe(1)
+    expect(await db.items.count()).toBe(1)
+  })
+
+  it('sale de syncing hacia error al cancelar conexión inicial y serializa llamadas concurrentes', async () => {
+    let connectCalls = 0
+    const mockProvider: CloudSyncProvider = {
+      isConfigured: () => true,
+      isConnected: () => false,
+      getClientIdOverride: () => '',
+      setClientIdOverride: () => {},
+      hasDefaultClientId: () => true,
+      getLastSyncedAt: () => null,
+      setLastSyncedAt: () => {},
+      connect: async () => {
+        connectCalls += 1
+        throw new CloudSyncError('AUTH_DENIED', 'Cancelado')
+      },
+      disconnect: async () => {},
+      readRemoteBackup: async () => null,
+      writeRemoteBackup: async () => {},
+    }
+
+    const service = new SyncService(mockProvider)
+    const [r1, r2] = await Promise.all([service.connectAndSync(), service.connectAndSync()])
+    expect(r1).toBe(false)
+    expect(r2).toBe(false)
+    expect(connectCalls).toBe(1)
+    expect(service.getState().status).toBe('error')
   })
 })
