@@ -88,12 +88,34 @@ export class SyncService {
   }
 
   async connectAndSync(): Promise<boolean> {
+    if (this.inFlightSync) return this.inFlightSync
+
+    this.inFlightSync = this.executeConnectAndSync().finally(() => {
+      this.inFlightSync = null
+    })
+    return this.inFlightSync
+  }
+
+  private async executeConnectAndSync(): Promise<boolean> {
+    const wasConnected = this.provider.isConnected()
     this.setState({ status: 'syncing', lastError: null })
     try {
       await this.provider.connect()
       this.setState({ connected: true })
-      return await this.syncNow({ interactive: false })
+      return await this.performSync()
     } catch (err) {
+      if (
+        wasConnected &&
+        err instanceof CloudSyncError &&
+        err.code === 'AUTH_DENIED'
+      ) {
+        this.setState({
+          status: 'token_expired',
+          lastError: err.message,
+          pendingChanges: true,
+        })
+        return false
+      }
       this.handleSyncError(err)
       return false
     }
@@ -132,42 +154,46 @@ export class SyncService {
 
     if (!this.provider.isConnected()) {
       if (!options.interactive) return false
-      return this.connectAndSync()
+      return this.executeConnectAndSync()
     }
 
     this.setState({ status: 'syncing', lastError: null })
 
     try {
-      const [local, remote] = await Promise.all([
-        readLocalSnapshot(),
-        this.provider.readRemoteBackup(),
-      ])
-
-      const merged = mergeSnapshots(local, remote ?? EMPTY_SNAPSHOT)
-      await writeLocalSnapshot(merged)
-      await this.provider.writeRemoteBackup(merged)
-
-      const syncedAt = Date.now()
-      this.provider.setLastSyncedAt(syncedAt)
-      this.setState({
-        status: 'synced',
-        connected: true,
-        lastSyncedAt: syncedAt,
-        lastError: null,
-        pendingChanges: false,
-      })
-      return true
+      return await this.performSync()
     } catch (err) {
       if (
         options.interactive &&
         err instanceof CloudSyncError &&
         err.code === 'TOKEN_EXPIRED'
       ) {
-        return this.connectAndSync()
+        return this.executeConnectAndSync()
       }
       this.handleSyncError(err)
       return false
     }
+  }
+
+  private async performSync(): Promise<boolean> {
+    const [local, remote] = await Promise.all([
+      readLocalSnapshot(),
+      this.provider.readRemoteBackup(),
+    ])
+
+    const merged = mergeSnapshots(local, remote ?? EMPTY_SNAPSHOT)
+    await writeLocalSnapshot(merged)
+    await this.provider.writeRemoteBackup(merged)
+
+    const syncedAt = Date.now()
+    this.provider.setLastSyncedAt(syncedAt)
+    this.setState({
+      status: 'synced',
+      connected: true,
+      lastSyncedAt: syncedAt,
+      lastError: null,
+      pendingChanges: false,
+    })
+    return true
   }
 
   private handleSyncError(err: unknown): void {

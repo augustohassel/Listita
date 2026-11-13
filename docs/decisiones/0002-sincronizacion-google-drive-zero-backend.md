@@ -21,4 +21,4 @@ Adoptar sincronización cliente-a-cliente hacia el Google Drive personal del usu
 
 ## Consecuencias
 - **Positivas**: cero infraestructura de servidor para la app, privacidad total (cada usuario almacena su JSON en su propio Drive), operación 100% funcional offline sobre `IndexedDB`.
-- **Negativas / Trade-offs**: el token OAuth de GIS en navegador expira periódicamente (requiere reconexión explícita con un clic cuando caduca) y requiere configurar un `VITE_GOOGLE_CLIENT_ID` público en GCP Console.
+- **Negativas / Trade-offs**: el token OAuth de GIS en navegador expira periódicamente (~1 hora). Para evitar falsos avisos de sesión expirada al refrescar la pestaña, el token vigente se resguarda temporalmente en `sessionStorage` (acotado a la pestaña activa) y, ante ausencia o vencimiento, se intenta renovación silenciosa (`prompt: ''`) con timeouts defensivos antes de requerir reconexión manual con un clic; además requiere configurar un `VITE_GOOGLE_CLIENT_ID` público en GCP Console.
