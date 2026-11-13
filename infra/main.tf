@@ -37,6 +37,18 @@ resource "google_project_iam_member" "github_actions_editor" {
   member  = "serviceAccount:${google_service_account.github_actions[0].email}"
 }
 
+resource "google_project_iam_member" "github_actions_ci_roles" {
+  for_each = var.enable_github_oidc ? toset([
+    "roles/iam.serviceAccountAdmin",
+    "roles/iam.workloadIdentityPoolAdmin",
+    "roles/resourcemanager.projectIamAdmin",
+  ]) : toset([])
+
+  project = var.project_id
+  role    = each.value
+  member  = "serviceAccount:${google_service_account.github_actions[0].email}"
+}
+
 resource "google_iam_workload_identity_pool" "github" {
   count = var.enable_github_oidc ? 1 : 0
 
