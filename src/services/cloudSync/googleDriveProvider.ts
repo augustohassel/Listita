@@ -10,7 +10,14 @@ export const DRIVE_BACKUP_FILENAME = 'listita-backup.json'
 const STORAGE_KEY_CONNECTED = 'listita.cloudSync.connected'
 const STORAGE_KEY_LAST_SYNC = 'listita.cloudSync.lastSyncedAt'
 const STORAGE_KEY_CLIENT_ID_OVERRIDE = 'listita.cloudSync.clientIdOverride'
+const SESSION_KEY_TOKEN = 'listita.cloudSync.accessToken'
+const SESSION_KEY_EXPIRES_AT = 'listita.cloudSync.tokenExpiresAt'
 const TOKEN_EXPIRY_SKEW_MS = 30_000
+
+export const GIS_SCRIPT_TIMEOUT_MS = 8_000
+export const SILENT_AUTH_TIMEOUT_MS = 8_000
+export const INTERACTIVE_AUTH_TIMEOUT_MS = 60_000
+export const DRIVE_FETCH_TIMEOUT_MS = 15_000
 
 interface GisTokenResponse {
   access_token?: string
@@ -62,6 +69,27 @@ function writeStorage(key: string, value: string | null): void {
   }
 }
 
+function readSessionStorage(key: string): string {
+  try {
+    return typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(key) ?? '' : ''
+  } catch {
+    return ''
+  }
+}
+
+function writeSessionStorage(key: string, value: string | null): void {
+  try {
+    if (typeof sessionStorage === 'undefined') return
+    if (value === null || value === '') {
+      sessionStorage.removeItem(key)
+    } else {
+      sessionStorage.setItem(key, value)
+    }
+  } catch {
+    // Ignorar errores de almacenamiento (modo privado / cuota)
+  }
+}
+
 function isOnline(): boolean {
   if (typeof navigator === 'undefined') return true
   return navigator.onLine !== false
@@ -81,17 +109,38 @@ export function loadGisScript(): Promise<void> {
   if (gisLoadPromise) return gisLoadPromise
 
   gisLoadPromise = new Promise<void>((resolve, reject) => {
+    let settled = false
+    const timer = setTimeout(() => {
+      if (settled) return
+      settled = true
+      gisLoadPromise = null
+      reject(
+        new CloudSyncError(
+          'NETWORK_ERROR',
+          'Se agotó el tiempo de espera al cargar Google Identity Services.',
+        ),
+      )
+    }, GIS_SCRIPT_TIMEOUT_MS)
+
+    const finishResolve = () => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      resolve()
+    }
+
+    const finishReject = () => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      gisLoadPromise = null
+      reject(new CloudSyncError('OFFLINE', 'No se pudo cargar Google Identity Services. Verificá tu conexión.'))
+    }
+
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${GIS_SCRIPT_URL}"]`)
     if (existing) {
-      existing.addEventListener('load', () => resolve(), { once: true })
-      existing.addEventListener(
-        'error',
-        () => {
-          gisLoadPromise = null
-          reject(new CloudSyncError('OFFLINE', 'No se pudo cargar Google Identity Services. Verificá tu conexión.'))
-        },
-        { once: true },
-      )
+      existing.addEventListener('load', finishResolve, { once: true })
+      existing.addEventListener('error', finishReject, { once: true })
       return
     }
 
@@ -99,11 +148,8 @@ export function loadGisScript(): Promise<void> {
     script.src = GIS_SCRIPT_URL
     script.async = true
     script.defer = true
-    script.onload = () => resolve()
-    script.onerror = () => {
-      gisLoadPromise = null
-      reject(new CloudSyncError('OFFLINE', 'No se pudo cargar Google Identity Services. Verificá tu conexión.'))
-    }
+    script.onload = finishResolve
+    script.onerror = finishReject
     document.head.appendChild(script)
   })
 
@@ -113,10 +159,38 @@ export function loadGisScript(): Promise<void> {
 export class GoogleDriveProvider implements CloudSyncProvider {
   private accessToken: string | null = null
   private tokenExpiresAt = 0
+  private silentRefreshPromise: Promise<string> | null = null
   private readonly defaultClientId: string
 
   constructor(defaultClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '').trim()) {
     this.defaultClientId = defaultClientId
+    this.restoreTokenFromSession()
+  }
+
+  private saveToken(token: string, expiresAt: number): void {
+    this.accessToken = token
+    this.tokenExpiresAt = expiresAt
+    writeSessionStorage(SESSION_KEY_TOKEN, token)
+    writeSessionStorage(SESSION_KEY_EXPIRES_AT, String(expiresAt))
+  }
+
+  private clearToken(): void {
+    this.accessToken = null
+    this.tokenExpiresAt = 0
+    writeSessionStorage(SESSION_KEY_TOKEN, null)
+    writeSessionStorage(SESSION_KEY_EXPIRES_AT, null)
+  }
+
+  private restoreTokenFromSession(): void {
+    const token = readSessionStorage(SESSION_KEY_TOKEN)
+    const rawExpiresAt = readSessionStorage(SESSION_KEY_EXPIRES_AT)
+    const expiresAt = Number(rawExpiresAt)
+    if (token && Number.isFinite(expiresAt) && Date.now() < expiresAt) {
+      this.accessToken = token
+      this.tokenExpiresAt = expiresAt
+    } else if (token || rawExpiresAt) {
+      this.clearToken()
+    }
   }
 
   hasDefaultClientId(): boolean {
@@ -129,8 +203,7 @@ export class GoogleDriveProvider implements CloudSyncProvider {
 
   setClientIdOverride(clientId: string): void {
     writeStorage(STORAGE_KEY_CLIENT_ID_OVERRIDE, clientId.trim() || null)
-    this.accessToken = null
-    this.tokenExpiresAt = 0
+    this.clearToken()
   }
 
   private resolveClientId(): string {
@@ -179,50 +252,121 @@ export class GoogleDriveProvider implements CloudSyncProvider {
       throw new CloudSyncError('NETWORK_ERROR', 'Google Identity Services no se inicializó correctamente.')
     }
 
+    const isSilent = prompt === ''
+    const timeoutMs = isSilent ? SILENT_AUTH_TIMEOUT_MS : INTERACTIVE_AUTH_TIMEOUT_MS
+
     return new Promise<string>((resolve, reject) => {
+      let settled = false
+      const timer = setTimeout(() => {
+        if (settled) return
+        settled = true
+        reject(
+          isSilent
+            ? new CloudSyncError(
+                'TOKEN_EXPIRED',
+                'Tu sesión de Google Drive expiró. Tocá «Reconectar» para volver a sincronizar.',
+              )
+            : new CloudSyncError(
+                'AUTH_DENIED',
+                'Se agotó el tiempo de espera o se cerró la ventana de autenticación con Google.',
+              ),
+        )
+      }, timeoutMs)
+
+      const finishResolve = (token: string) => {
+        if (settled) return
+        settled = true
+        clearTimeout(timer)
+        resolve(token)
+      }
+
+      const finishReject = (err: CloudSyncError) => {
+        if (settled) return
+        settled = true
+        clearTimeout(timer)
+        reject(err)
+      }
+
       const client = oauth2.initTokenClient({
         client_id: clientId,
         scope: DRIVE_SCOPE,
         callback: (response) => {
           if (response.error || !response.access_token) {
-            reject(
-              new CloudSyncError(
-                'AUTH_DENIED',
-                response.error_description || 'No se autorizó el acceso a Google Drive.',
-              ),
+            finishReject(
+              isSilent
+                ? new CloudSyncError(
+                    'TOKEN_EXPIRED',
+                    'Tu sesión de Google Drive expiró. Tocá «Reconectar» para volver a sincronizar.',
+                  )
+                : new CloudSyncError(
+                    'AUTH_DENIED',
+                    response.error_description || 'No se autorizó el acceso a Google Drive.',
+                  ),
             )
             return
           }
           const expiresInSec = typeof response.expires_in === 'number' ? response.expires_in : 3600
-          this.accessToken = response.access_token
-          this.tokenExpiresAt = Date.now() + expiresInSec * 1000 - TOKEN_EXPIRY_SKEW_MS
-          resolve(response.access_token)
+          const expiresAt = Date.now() + expiresInSec * 1000 - TOKEN_EXPIRY_SKEW_MS
+          this.saveToken(response.access_token, expiresAt)
+          finishResolve(response.access_token)
         },
         error_callback: (err) => {
-          reject(
-            new CloudSyncError(
-              'AUTH_DENIED',
-              err.message || 'Se canceló o rechazó la autenticación con Google.',
-            ),
+          finishReject(
+            isSilent
+              ? new CloudSyncError(
+                  'TOKEN_EXPIRED',
+                  'Tu sesión de Google Drive expiró. Tocá «Reconectar» para volver a sincronizar.',
+                )
+              : new CloudSyncError(
+                  'AUTH_DENIED',
+                  err.message || 'Se canceló o rechazó la autenticación con Google.',
+                ),
           )
         },
       })
 
-      client.requestAccessToken({ prompt })
+      try {
+        client.requestAccessToken({ prompt })
+      } catch (err) {
+        finishReject(
+          isSilent
+            ? new CloudSyncError(
+                'TOKEN_EXPIRED',
+                'Tu sesión de Google Drive expiró. Tocá «Reconectar» para volver a sincronizar.',
+              )
+            : new CloudSyncError(
+                'AUTH_DENIED',
+                err instanceof Error ? err.message : 'No se pudo iniciar la autenticación con Google.',
+              ),
+        )
+      }
     })
   }
 
-  private ensureValidToken(): string {
+  private silentRefresh(): Promise<string> {
+    if (!this.silentRefreshPromise) {
+      this.silentRefreshPromise = this.requestAccessToken('').finally(() => {
+        this.silentRefreshPromise = null
+      })
+    }
+    return this.silentRefreshPromise
+  }
+
+  private async ensureValidToken(): Promise<string> {
     this.assertConfiguredAndOnline()
-    if (!this.accessToken || Date.now() >= this.tokenExpiresAt) {
-      this.accessToken = null
-      this.tokenExpiresAt = 0
+    if (this.accessToken && Date.now() < this.tokenExpiresAt) {
+      return this.accessToken
+    }
+
+    this.clearToken()
+    if (!this.isConnected()) {
       throw new CloudSyncError(
         'TOKEN_EXPIRED',
         'Tu sesión de Google Drive expiró. Tocá «Reconectar» para volver a sincronizar.',
       )
     }
-    return this.accessToken
+
+    return this.silentRefresh()
   }
 
   async connect(): Promise<void> {
@@ -232,8 +376,7 @@ export class GoogleDriveProvider implements CloudSyncProvider {
 
   async disconnect(): Promise<void> {
     const token = this.accessToken
-    this.accessToken = null
-    this.tokenExpiresAt = 0
+    this.clearToken()
     writeStorage(STORAGE_KEY_CONNECTED, null)
 
     const revoke = getGoogleGlobal()?.accounts?.oauth2?.revoke
@@ -249,25 +392,39 @@ export class GoogleDriveProvider implements CloudSyncProvider {
   }
 
   private async driveFetch(url: string, init: RequestInit = {}): Promise<Response> {
-    const token = this.ensureValidToken()
+    const token = await this.ensureValidToken()
     const headers = new Headers(init.headers)
     headers.set('Authorization', `Bearer ${token}`)
 
+    const controller = new AbortController()
+    const externalSignal = init.signal
+    const onExternalAbort = () => controller.abort()
+    if (externalSignal) {
+      if (externalSignal.aborted) {
+        controller.abort()
+      } else {
+        externalSignal.addEventListener('abort', onExternalAbort, { once: true })
+      }
+    }
+    const timer = setTimeout(() => controller.abort(), DRIVE_FETCH_TIMEOUT_MS)
+
     let response: Response
     try {
-      response = await fetch(url, { ...init, headers })
+      response = await fetch(url, { ...init, headers, signal: controller.signal })
     } catch {
       throw new CloudSyncError(
         isOnline() ? 'NETWORK_ERROR' : 'OFFLINE',
         isOnline()
-          ? 'Error de red al comunicarse con Google Drive.'
+          ? 'Error de red o tiempo de espera agotado al comunicarse con Google Drive.'
           : 'Sin conexión a internet. Tus cambios siguen guardados localmente.',
       )
+    } finally {
+      clearTimeout(timer)
+      externalSignal?.removeEventListener('abort', onExternalAbort)
     }
 
     if (response.status === 401) {
-      this.accessToken = null
-      this.tokenExpiresAt = 0
+      this.clearToken()
       throw new CloudSyncError(
         'TOKEN_EXPIRED',
         'Tu sesión de Google Drive expiró. Tocá «Reconectar» para volver a sincronizar.',
