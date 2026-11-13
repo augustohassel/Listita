@@ -471,11 +471,21 @@ export function SettingsView({
         )}
       </div>
 
-      <div className="pt-2 pb-6 text-center">
+      <div className="pt-2 pb-6 text-center space-y-1.5">
         <p className="text-[11px] font-mono text-ink-muted/70">
           Listita{" "}
           <span className="text-ink-muted font-semibold">v{APP_VERSION}</span> • PWA
           Local-First
+        </p>
+        <p className="text-[11px] text-ink-muted/80">
+          <a
+            href={`${import.meta.env.BASE_URL}privacy.html`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-ink transition-colors"
+          >
+            Política de Privacidad
+          </a>
         </p>
       </div>
     </section>

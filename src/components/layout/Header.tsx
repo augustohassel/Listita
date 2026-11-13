@@ -1,4 +1,16 @@
-import { Layers, Moon, ShieldCheck, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  AlertTriangle,
+  Cloud,
+  CloudOff,
+  Layers,
+  Moon,
+  RefreshCw,
+  ShieldCheck,
+  Sun,
+} from "lucide-react";
+import { syncService } from "../../services/cloudSync/syncService";
+import type { SyncState } from "../../services/cloudSync/types";
 import type { ThemeMode } from "../../types";
 import { APP_VERSION } from "../../version";
 
@@ -16,6 +28,66 @@ export function Header({
   onToggleTheme,
 }: HeaderProps) {
   const isDark = theme === "dark";
+  const [syncState, setSyncState] = useState<SyncState>(() =>
+    syncService.getState(),
+  );
+
+  useEffect(() => syncService.subscribe(setSyncState), []);
+
+  const renderStatusLine = () => {
+    if (!syncState.connected) {
+      return (
+        <div className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+          <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+          <span>Local-First y Privado</span>
+        </div>
+      );
+    }
+
+    if (syncState.status === "syncing") {
+      return (
+        <div className="flex items-center gap-1 text-[11px] text-accent font-medium">
+          <RefreshCw className="w-3.5 h-3.5 shrink-0 animate-spin" />
+          <span>Local · Sincronizando Drive...</span>
+        </div>
+      );
+    }
+
+    if (syncState.status === "offline") {
+      return (
+        <div className="flex items-center gap-1 text-[11px] text-ink-muted font-medium">
+          <CloudOff className="w-3.5 h-3.5 shrink-0" />
+          <span>
+            Local · Offline{syncState.pendingChanges ? " (pendiente)" : ""}
+          </span>
+        </div>
+      );
+    }
+
+    if (syncState.status === "error" || syncState.status === "token_expired") {
+      return (
+        <div
+          className="flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400 font-medium"
+          title={syncState.lastError ?? undefined}
+        >
+          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+          <span>Local · Sync Drive pendiente</span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+        <Cloud className="w-3.5 h-3.5 shrink-0" />
+        <span>
+          Local ·{" "}
+          {syncState.pendingChanges
+            ? "Drive (cambios pendientes)"
+            : "Drive sincronizado"}
+        </span>
+      </div>
+    );
+  };
 
   return (
     <header className="sticky top-0 z-30 glass-panel border-b border-line/20 px-4 py-3 sm:px-6 pt-[max(0.75rem,var(--safe-top))]">
@@ -35,10 +107,7 @@ export function Header({
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-              <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-              <span>Local-First y Privado</span>
-            </div>
+            {renderStatusLine()}
           </div>
         </div>
 
