@@ -280,10 +280,10 @@ export default function App() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <span className="text-[10px] uppercase tracking-wider font-semibold text-accent">
+                          <span className="block text-[10px] uppercase tracking-wider font-semibold text-accent break-words">
                             {list.category || "Listado personal"}
                           </span>
-                          <h2 className="text-base font-bold text-ink truncate">
+                          <h2 className="text-base font-bold text-ink break-words leading-snug">
                             {list.name}
                           </h2>
                         </div>
