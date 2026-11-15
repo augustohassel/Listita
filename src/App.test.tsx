@@ -175,3 +175,59 @@ it('gestiona el subtítulo contextual en el Header y permite alternar la aparien
   fireEvent.click(screen.getByRole('button', { name: 'Confirmar borrado total' }))
   await waitFor(async () => expect(await db.lists.count()).toBe(0))
 })
+
+it('muestra nombres completos sin truncado y con salto de palabra en tarjetas de listados y rankings', async () => {
+  const longListName = 'Alfajores artesanales Supercalifragilisticoespialidoso123456'
+  const longItemName = 'Capitán del Espacio TripleChocolateSupercalifragilisticoespialidoso'
+
+  render(<App />)
+  await screen.findByText('Vinos, bares, comidas… empezá por un listado.')
+
+  fireEvent.click(screen.getByRole('button', { name: /Nuevo listado/i }))
+  const listDialog = await screen.findByRole('dialog', { name: 'Nuevo listado' })
+  fill('Nombre del listado', longListName)
+  fill('Atributos del listado', 'Marca')
+  fireEvent.click(within(listDialog).getByRole('button', { name: 'Crear listado' }))
+
+  await screen.findByRole('heading', { name: longListName })
+
+  fireEvent.click(screen.getByRole('button', { name: /Nuevo elemento/i }))
+  const itemDialog = await screen.findByRole('dialog', { name: 'Agregar elemento' })
+  fill('Nombre del elemento', longItemName)
+  fill('Marca', 'Quilmes')
+  fireEvent.click(within(itemDialog).getByRole('button', { name: 'Agregar elemento' }))
+  await screen.findByRole('heading', { name: longItemName })
+
+  const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
+  fireEvent.click(within(nav).getByRole('button', { name: /Listados/i }))
+
+  const listCardHeading = await screen.findByRole('heading', { level: 2, name: longListName })
+  expect(listCardHeading).toBeInTheDocument()
+  expect(listCardHeading).not.toHaveClass('truncate')
+  expect(listCardHeading).toHaveClass('break-words', 'leading-snug')
+
+  fireEvent.click(within(nav).getByRole('button', { name: /Rankings/i }))
+  fireEvent.click(screen.getByRole('button', { name: /Nuevo ranking/i }))
+  const rankingDialog = await screen.findByRole('dialog', { name: 'Crear nuevo ranking' })
+  fill('Nombre del ranking', 'Top alfajores')
+  fireEvent.click(within(rankingDialog).getByRole('button', { name: 'Crear ranking' }))
+
+  const ranking = await screen.findByRole('article', { name: 'Top alfajores' })
+  const rankItem = within(ranking).getByRole('listitem')
+  const itemNameEl = within(rankItem).getByText(longItemName)
+
+  expect(itemNameEl).toBeInTheDocument()
+  expect(itemNameEl).not.toHaveClass('truncate')
+  expect(itemNameEl).toHaveClass('break-words', 'leading-snug')
+  expect(within(rankItem).getByText('#1')).toBeInTheDocument()
+  expect(within(rankItem).getByText('#1 Oro')).toBeInTheDocument()
+  expect(within(rankItem).getByText('Marca: Quilmes')).toBeInTheDocument()
+  expect(within(rankItem).getByRole('button', { name: `Subir ${longItemName}` })).toBeInTheDocument()
+  expect(within(rankItem).getByRole('button', { name: `Bajar ${longItemName}` })).toBeInTheDocument()
+  expect(within(rankItem).getByRole('button', { name: `Quitar ${longItemName} del ranking` })).toBeInTheDocument()
+
+  await db.lists.clear()
+  await db.items.clear()
+  await db.rankings.clear()
+  await db.tombstones.clear()
+})

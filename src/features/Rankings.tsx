@@ -248,82 +248,83 @@ export function Rankings({
               const item = items.find((entry) => entry.id === id)
               if (!item) return null
               const podium = getPodiumStyle(index)
+              const visibleAttributes = Object.entries(item.attributes)
+                .filter(([, val]) => Boolean(val))
+                .slice(0, 3)
 
               return (
                 <li
                   key={id}
-                  className={`rounded-2xl border p-3.5 flex items-center justify-between gap-3 transition-all ${podium.card}`}
+                  className={`rounded-2xl border p-3.5 space-y-2.5 transition-all ${podium.card}`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-start gap-3 min-w-0">
                     <span
                       title={podium.label}
                       className={`w-8 h-8 shrink-0 rounded-xl font-extrabold text-xs flex items-center justify-center ${podium.badge}`}
                     >
                       #{index + 1}
                     </span>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-sm text-ink truncate">
-                          {item.name}
+                    <div className="flex items-center gap-2 flex-wrap min-w-0 flex-1 pt-0.5">
+                      <span className="font-semibold text-sm text-ink break-words leading-snug min-w-0 max-w-full">
+                        {item.name}
+                      </span>
+                      {index < 3 && (
+                        <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${podium.pill}`}>
+                          {podium.label}
                         </span>
-                        {index < 3 && (
-                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${podium.pill}`}>
-                            {podium.label}
-                          </span>
-                        )}
-                      </div>
-                      {Object.entries(item.attributes).some(([, val]) => Boolean(val)) && (
-                        <div className="flex flex-wrap gap-1.5 mt-1">
-                          {Object.entries(item.attributes)
-                            .filter(([, val]) => Boolean(val))
-                            .slice(0, 3)
-                            .map(([key, val]) => (
-                              <span
-                                key={key}
-                                className="text-[11px] text-ink-muted bg-surface/70 px-2 py-0.5 rounded-md border border-line/20"
-                              >
-                                {key}: {val}
-                              </span>
-                            ))}
-                        </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      type="button"
-                      aria-label={`Subir ${item.name}`}
-                      disabled={index === 0}
-                      onClick={() => move(activeRanking, index, -1)}
-                      className="touch-target p-2 rounded-xl bg-surface/80 hover:bg-surface text-ink border border-line/25 disabled:opacity-35 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent"
-                    >
-                      <ArrowUp className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`Bajar ${item.name}`}
-                      disabled={index === activeRanking.itemIds.length - 1}
-                      onClick={() => move(activeRanking, index, 1)}
-                      className="touch-target p-2 rounded-xl bg-surface/80 hover:bg-surface text-ink border border-line/25 disabled:opacity-35 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent"
-                    >
-                      <ArrowDown className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`Quitar ${item.name} del ranking`}
-                      onClick={() =>
-                        void run(() =>
-                          setRankingItems(
-                            activeRanking.id,
-                            activeRanking.itemIds.filter((itemId) => itemId !== id),
-                          ),
-                        )
-                      }
-                      className="touch-target px-2.5 py-2 rounded-xl bg-surface/80 hover:bg-red-500/20 text-ink-muted hover:text-red-600 dark:hover:text-red-300 border border-line/25 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-red-400"
-                    >
-                      Quitar
-                    </button>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    {visibleAttributes.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 min-w-0 max-w-full">
+                        {visibleAttributes.map(([key, val]) => (
+                          <span
+                            key={key}
+                            className="text-[11px] text-ink-muted bg-surface/70 px-2 py-0.5 rounded-md border border-line/20 break-words min-w-0 max-w-full"
+                          >
+                            {key}: {val}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-1 shrink-0 ml-auto">
+                      <button
+                        type="button"
+                        aria-label={`Subir ${item.name}`}
+                        disabled={index === 0}
+                        onClick={() => move(activeRanking, index, -1)}
+                        className="touch-target p-2 rounded-xl bg-surface/80 hover:bg-surface text-ink border border-line/25 disabled:opacity-35 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent"
+                      >
+                        <ArrowUp className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Bajar ${item.name}`}
+                        disabled={index === activeRanking.itemIds.length - 1}
+                        onClick={() => move(activeRanking, index, 1)}
+                        className="touch-target p-2 rounded-xl bg-surface/80 hover:bg-surface text-ink border border-line/25 disabled:opacity-35 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent"
+                      >
+                        <ArrowDown className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Quitar ${item.name} del ranking`}
+                        onClick={() =>
+                          void run(() =>
+                            setRankingItems(
+                              activeRanking.id,
+                              activeRanking.itemIds.filter((itemId) => itemId !== id),
+                            ),
+                          )
+                        }
+                        className="touch-target px-2.5 py-2 rounded-xl bg-surface/80 hover:bg-red-500/20 text-ink-muted hover:text-red-600 dark:hover:text-red-300 border border-line/25 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-red-400"
+                      >
+                        Quitar
+                      </button>
+                    </div>
                   </div>
                 </li>
               )
